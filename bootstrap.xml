@@ -5,7 +5,6 @@
     
     <import file="bootstrap.properties.ant.xml" />
     <import file="${helium.dir}/helium.ant.xml" />    
-    <!-- <target name="bootstrap" depends="init,get-sf-config,get-sbs-tools,get-platform-config" />-->
 
     <target name="bootstrap" depends="init,get-sf-config,get-platform-config, parse-platform-config,
                 generate-pkg-build-xml" />

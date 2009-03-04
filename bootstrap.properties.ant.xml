@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="SF-BOOTSTRAP" default="bootstrap" xmlns:hlm="http://www.nokia.com/helium">
+<project name="SF-BOOTSTRAP-PROPERTIES" default="bootstrap" xmlns:hlm="http://www.nokia.com/helium">
     <property name="sbs.tools.src.path" value="e:\build_e\varamana\sbs-source-dir"/>
     <property name="sbs.zip.file" value="sbs_2.4.0_with_nokia_cfgs.zip"/>    
     
@@ -11,5 +11,5 @@
     
     <!-- the build dir to put bootstrap files into -->
     <property name="bootstrap.base.dir" value="e:\build_e\sf-bootstrap-new" />
-    <property name="hg.config" value="full-list.csv" />
+    <property name="hg.config" value="sources.csv" />
 </project>
