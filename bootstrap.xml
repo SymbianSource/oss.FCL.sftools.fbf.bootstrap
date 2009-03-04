@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SF-BOOTSTRAP" default="bootstrap" xmlns:hlm="http://www.nokia.com/helium">
 
-
-    <property name="sbs.tools.src.path" value="e:\build_e\varamana\sbs-source-dir"/>
-    <property name="sbs.zip.file" value="sbs_2.4.0_with_nokia_cfgs.zip"/>    
+    <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
     
-    <!-- location of Hg bootstrap repositories -->
-    <property name="sf.config.repository"       value="d:\TB91_releases\sf-new\hg-sf-helium-config" />
-    
-    <!-- call this project -->
-    <property name="platform.config.repository" value="d:\TB91_releases\sf-new\hg-platform-config" />
-    
-    <!-- the build dir to put bootstrap files into -->
-    <property name="bootstrap.base.dir" value="d:\TB91_releases\sf-new\build\" />
-
+    <import file="bootstrap.properties.ant.xml" />
     <import file="${helium.dir}/helium.ant.xml" />    
     <!-- <target name="bootstrap" depends="init,get-sf-config,get-sbs-tools,get-platform-config" />-->
 
-    <target name="bootstrap" depends="init,get-sf-config,get-platform-config" />
+    <target name="bootstrap" depends="init,get-sf-config,get-platform-config, parse-platform-config,
+                generate-pkg-build-xml" />
 
     <target name="init">
         <mkdir dir="${bootstrap.base.dir}" />
@@ -30,14 +21,6 @@
     </target>
 
     <target name="get-sf-config">
-        <!-- remove jars once cleared for subcon 
-        <classpath>
-            <pathelement location="D:/helium-3.44/helium-3.44.x/helium/external/antlibs/internal/maven-scm-api-1.1.jar"/>
-            <pathelement location="D:/helium-3.44/helium-3.44.x/helium/external/antlibs/internal/maven-scm-provider-svn-commons-1.1.jar"/>
-            <pathelement location="D:/helium-3.44/helium-3.44.x/helium/external/antlibs/internal/maven-scm-provider-synergy-1.1.jar"/>
-            <pathelement location="D:/helium-3.44/helium-3.44.x/helium/external/antlibs/internal/maven-scm-provider-hg-1.1.jar"/>
-        </classpath>
-        -->
         <echo message="Getting sf helium configuration from repository ${sf.config.repository}" />
         <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repository}">
             <hlm:checkout basedir="${bootstrap.base.dir}/sf-config"/>
@@ -45,6 +28,8 @@
     </target>
 
     <target name="get-sbs-tools">
+        <!-- Todo: Move this to helium config or after parsing platform build configuration 
+        to install the tools from there  -->
     	<if>
     		<not><available file="${bootstrap.base.dir}/sbs"/></not>
     		<then>
@@ -59,12 +44,27 @@ set PATH=${bootstrap.base.dir}\sbs\bin;${bootstrap.base.dir}\sbs\win32\mingw\bin
     </target>
 
     <target name="get-platform-config">
-        
-     
-        
         <echo message="Getting platform configuration${platform.config.repository}" />
         <hlm:scm verbose="true" scmUrl="scm:hg:${platform.config.repository}">
             <hlm:checkout basedir="${bootstrap.base.dir}/build/config"/>
         </hlm:scm>
+    </target>
+
+    <target name="parse-platform-config">
+        <!-- Todo: Parse the platform config and generate properties and csv file to be
+            used by the builds. -->
+        <echo message="Parse the platform configuration" />
+    </target>
+    
+    <target name="generate-pkg-build-xml" depends="parse-platform-config">
+        <!-- Todo: 1. Same file name hg-pkg-build.ant.xml is used for all packages
+            for multiple package builds, this needs to be linked with package name. -->
+        <fmpp sourceFile="${sf.bootstrap.dir}/templates/hg-pkg-build.ant.xml.ftl"
+                     outputFile="${bootstrap.base.dir}/build/hg-pkg-build.ant.xml">
+               <data expandProperties="yes">
+                    ant: antProperties()
+                    data: csv(${bootstrap.base.dir}/build/config/${hg.config}, {separator:','})
+                </data>
+        </fmpp>
     </target>
 </project>
