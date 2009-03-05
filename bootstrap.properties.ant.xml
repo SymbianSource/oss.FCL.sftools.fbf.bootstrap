@@ -11,5 +11,4 @@
     
     <!-- the build dir to put bootstrap files into -->
     <property name="bootstrap.base.dir" value="e:\build_e\sf-bootstrap-new" />
-    <property name="hg.config" value="sources.csv" />
 </project>
