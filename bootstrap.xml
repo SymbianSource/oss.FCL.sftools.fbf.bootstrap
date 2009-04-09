@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SF-BOOTSTRAP" default="bootstrap" xmlns:hlm="http://www.nokia.com/helium">
-
+    
+    <property environment="env"/>
+    
     <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
     
     <import file="bootstrap.properties.ant.xml" />
