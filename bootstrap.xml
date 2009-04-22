@@ -1,55 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SF-BOOTSTRAP" default="bootstrap" xmlns:hlm="http://www.nokia.com/helium">
     
-    <property environment="env"/>
+  <property environment="env"/>
     
-    <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
+  <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
+  
+  <!-- target dir -->
+  <property name="bootstrap.base.dir" value="D:\fbf_project"/> <!-- old name -->
+  <property name="sf.target.dir" value="${bootstrap.base.dir}"/>
+  
+  <!-- config -->
+  <property name="sf.config.repo" value="${sf.config.repository}"/> <!-- old name -->
+  <property name="sf.config.rev" value="tip"/>
+  <echo message="config: repo=${sf.config.repo} rev=${sf.config.rev}"/>
+  
+  <!-- project -->
+  <property name="sf.project.repo" value="${platform.config.repository}"/> <!-- old name -->
+  <property name="sf.project.rev" value="tip"/>
+  <echo message="project: repo=${sf.project.repo} rev=${sf.project.rev}"/>
+
+  <target name="bootstrap" depends="init,get-sf-config,get-sf-project" />
+
+  <target name="init">
+    <mkdir dir="${sf.target.dir}" />
+    <mkdir dir="${sf.target.dir}/build" />
+    <mkdir dir="${sf.target.dir}/build/config" />
+  </target>
     
-    <import file="bootstrap.properties.ant.xml" />
-    <import file="${helium.dir}/helium.ant.xml" />    
+  <target name="clean-env">
+    <echo message="cleaning up the environment" />
+    <delete dir="${sf.target.dir}/" />
+  </target>
 
-    <target name="bootstrap" depends="init,get-sf-config,get-project-config" />
+  <target name="get-sf-config">
+    <echo message="Getting sf helium configuration from repository ${sf.config.repo}"/>
+    <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repo}">
+      <hlm:checkout basedir="${sf.target.dir}/sf-config"/>
+      <hlm:tags basedir="${sf.target.dir}/sf-config" reference="hg.tags.id${refid}"/>
+      <hlm:update basedir="${sf.target.dir}/sf-config">
+        <hlm:latestTag pattern="${sf.config.rev}">
+          <hlm:tagSet refid="hg.tags.id${refid}"/> 
+        </hlm:latestTag>
+      </hlm:update>
+    </hlm:scm>
+  </target>
 
-    <target name="init">
-        <mkdir dir="${bootstrap.base.dir}" />
-        <mkdir dir="${bootstrap.base.dir}/build" />
-        <mkdir dir="${bootstrap.base.dir}/build/config" />
-    </target>
-    
-    <target name="clean-env">
-        <echo message="cleaning up the environment" />
-        <delete dir="${bootstrap.base.dir}/" />
-    </target>
-
-    <target name="get-sf-config">
-        <echo message="Getting sf helium configuration from repository ${sf.config.repository}" />
-        <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repository}">
-            <hlm:checkout basedir="${bootstrap.base.dir}/sf-config"/>
-        </hlm:scm>
-    </target>
-
-    <target name="get-sbs-tools">
-        <!-- Todo: Move this to helium config or after parsing platform build configuration 
-        to install the tools from there  -->
-    	<if>
-    		<not><available file="${bootstrap.base.dir}/sbs"/></not>
-    		<then>
-                <echo message="Extracting sbs tools ${sbs.tools.src.path}/${sbs.zip.file}" />
-    			<unzip src="${sbs.tools.src.path}/${sbs.zip.file}" dest="${bootstrap.base.dir}" />
-                <echo message="Updating sbs tools path to batch file" />
-        	    <echo file="${bootstrap.base.dir}/build/env.bat" append="true" >set SBS_HOME=${bootstrap.base.dir}\sbs
-set PATH=${bootstrap.base.dir}\sbs\bin;${bootstrap.base.dir}\sbs\win32\mingw\bin;${bootstrap.base.dir}\sbs\win32\cygwin\bin;%PATH%
-        	    </echo>
-    		</then>
-   	    </if>
-    </target>
-
-    <target name="get-project-config">
-        <echo message="Getting project configuration${platform.config.repository}" />
-        <hlm:scm verbose="true" scmUrl="scm:hg:${platform.config.repository}">
-            <hlm:checkout basedir="${bootstrap.base.dir}/build/config"/>
-        </hlm:scm>
-    </target>
+  <target name="get-sf-project">
+    <echo message="Getting project configuration${sf.project.repo}"/>
+    <hlm:scm verbose="true" scmUrl="scm:hg:${sf.project.repo}">
+      <hlm:checkout basedir="${sf.target.dir}/build/config"/>
+      <hlm:tags basedir="${sf.target.dir}/build/config" reference="hg.tags.id${refid}"/>
+      <hlm:update basedir="${sf.target.dir}/build/config">
+        <hlm:latestTag pattern="${sf.project.rev}">
+          <hlm:tagSet refid="hg.tags.id${refid}"/>
+        </hlm:latestTag>
+      </hlm:update>
+    </hlm:scm>
+  </target>
 
 
 </project>
