@@ -5,6 +5,8 @@
     
   <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
   
+  <import file="${helium.dir}/helium.ant.xml" /> 
+  
   <!-- target dir -->
   <property name="bootstrap.base.dir" value="D:\fbf_project"/> <!-- old name -->
   <property name="sf.target.dir" value="${bootstrap.base.dir}"/>
