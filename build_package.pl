@@ -7,9 +7,9 @@ use File::Path;
 
 my $sBOOTSTRAP_DIR="D:\\Helium\\hlm-apps\\bootstrap";
 my $sJOB_BASE_DIR="D:\\fbf_project";
-my $sCONFIG_REPO="\\\\lon-engbuild87\\d\$\\mercurial\\fbf\\configs\\dario_dev";
+my $sCONFIG_REPO="\\\\lon-engbuild87\\d\$\\mercurial_development\\epl\\interim\\fbf\\configs\\pkgbuild\\FCL_pkgbuild";
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sNUMBERS_FILE="\\\\lon-engbuild87\\d\$\\numbers.txt";
+my $sNUMBERS_FILE="\\\\sym-build01\\f\$\\numbers.txt";
 
 my $sProjectRepo = '';
 my $sJobLabel = '';
@@ -18,7 +18,7 @@ GetOptions(('label:s' => \$sJobLabel, 'project:s' => \$sProjectRepo, 'number:s' 
 
 if (!$sJobLabel or !$sProjectRepo)
 {
-	print "Usage: build_package.pl <label> <project_repo>\n";
+	print "Usage: build_package.pl --label=<label> --project=<project_repo>\n";
 	exit(0);
 }
 
