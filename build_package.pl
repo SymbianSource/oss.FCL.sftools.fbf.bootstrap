@@ -7,7 +7,7 @@ use File::Path;
 
 my $sBOOTSTRAP_DIR="D:\\Helium\\hlm-apps\\bootstrap";
 my $sJOB_BASE_DIR="D:\\fbf_project";
-my $sCONFIG_REPO="\\\\lon-engbuild87\\d\$\\mercurial_development\\epl\\interim\\fbf\\configs\\pkgbuild\\FCL_pkgbuild";
+my $sCONFIG_REPO="\\\\lon-engbuild87\\d\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
 my $sNUMBERS_FILE="\\\\sym-build01\\f\$\\numbers.txt";
