@@ -1,4 +1,17 @@
-#!/usr/bin/perl -w
+# Copyright (c) 2009 Symbian Foundation Ltd
+# This component and the accompanying materials are made available
+# under the terms of the License "Eclipse Public License v1.0"
+# which accompanies this distribution, and is available
+# at the URL "http://www.eclipse.org/legal/epl-v10.html".
+#
+# Initial Contributors:
+# Symbian Foundation Ltd - initial contribution.
+#
+# Contributors:
+#
+# Description:
+# This is a helper script which allocates unique drive letter and build number
+# then starts a package build by running FBF bootstrap and build targets
 
 use strict;
 
