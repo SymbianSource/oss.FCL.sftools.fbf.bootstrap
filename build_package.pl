@@ -18,23 +18,26 @@ use strict;
 use Getopt::Long;
 use File::Path;
 
-my $sBOOTSTRAP_DIR="D:\\Helium\\hlm-apps\\bootstrap";
+my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="D:\\fbf_project";
-my $sCONFIG_REPO="\\\\lon-engbuild87\\d\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sNUMBERS_FILE="\\\\sym-build01\\f\$\\numbers.txt";
+#my $sNUMBERS_FILE="\\\\sym-build01\\f\$\\numbers.txt";
+my $sNUMBERS_FILE="d:\\numbers.txt";
 my $sLETTERS_FILE="D:\\letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
-my $sProjectRepo = '';
+my $sFbfProjectRepo = '';
+my $sFbfProjectDir = '';
+my $sFbfConfigRepo="\\\\lon-engbuild87\\d\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
+my $sFbfConfigDir = '';
 my $sJobLabel = '';
 my $nCmdLineNumber;
-GetOptions(('label:s' => \$sJobLabel, 'project:s' => \$sProjectRepo, 'number:s' => \$nCmdLineNumber));
+GetOptions(('label:s' => \$sJobLabel, 'configrepo:s' => \$sFbfConfigRepo, 'configdir:s' => \$sFbfConfigDir, 'projectrepo:s' => \$sFbfProjectRepo, 'projectdir:s' => \$sFbfProjectDir, 'number:s' => \$nCmdLineNumber));
 
-if (!$sJobLabel or !$sProjectRepo)
+if (!$sJobLabel or !$sFbfProjectRepo)
 {
-	print "Usage: build_package.pl --label=<label> --project=<project_repo>\n";
+	print "Usage: build_package.pl --label=<label> --projectrepo=<project repo> | --projectdir=<project dir>\n\t[--configrepo=<config repo> | --configdir=<config dir>]\n";
 	exit(0);
 }
 
@@ -43,8 +46,12 @@ my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
 print "###### BOOTSTRAP ######\n";
-print("hlm -f bootstrap.xml -Dsf.config.repo=$sCONFIG_REPO -Dsf.project.repo=$sProjectRepo -Dsf.target.dir=$sJobDir\n");
-system("hlm -f bootstrap.xml -Dsf.config.repo=$sCONFIG_REPO -Dsf.project.repo=$sProjectRepo -Dsf.target.dir=$sJobDir");
+my $sConfigArg = "-Dsf.config.repo=$sFbfConfigRepo";
+$sConfigArg = "-Dsf.config.dir=$sFbfConfigDir" if ($sFbfConfigDir);
+my $sProjectArg = "-Dsf.project.repo=$sFbfProjectRepo";
+$sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
+print("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir\n");
+system("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir");
 
 # check that $sNUMBERS_FILE exists, otherwise create it
 if (!-f $sNUMBERS_FILE)
@@ -54,7 +61,7 @@ if (!-f $sNUMBERS_FILE)
 	close FILE;
 }
 
-my $nUnformattedNumber = ( $nCmdLineNumber ? $nCmdLineNumber : get_job_number($sProjectRepo));
+my $nUnformattedNumber = ( $nCmdLineNumber ? $nCmdLineNumber : get_job_number($sFbfProjectRepo));
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
 
 # check that $sLETTERS_FILE exists, otherwise create it

@@ -35,29 +35,51 @@
   </target>
 
   <target name="get-sf-config">
-    <echo message="Getting sf helium configuration from repository ${sf.config.repo}"/>
-    <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repo}">
-      <hlm:checkout basedir="${sf.target.dir}/sf-config"/>
-      <hlm:tags basedir="${sf.target.dir}/sf-config" reference="hg.tags.id${refid}"/>
-      <hlm:update basedir="${sf.target.dir}/sf-config">
-        <hlm:latestTag pattern="${sf.config.rev}">
-          <hlm:tagSet refid="hg.tags.id${refid}"/> 
-        </hlm:latestTag>
-      </hlm:update>
-    </hlm:scm>
+    <if>
+      <isset property="sf.config.dir"/>
+      <then>
+        <echo message="Getting FBF configuration from dir ${sf.config.dir}"/>
+        <copy todir="${sf.target.dir}/sf-config">
+          <fileset dir="${sf.config.dir}"/>
+        </copy>
+      </then>
+      <else>
+        <echo message="Getting FBF configuration from repository ${sf.config.repo}"/>
+        <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repo}">
+          <hlm:checkout basedir="${sf.target.dir}/sf-config"/>
+          <hlm:tags basedir="${sf.target.dir}/sf-config" reference="hg.tags.id${refid}"/>
+          <hlm:update basedir="${sf.target.dir}/sf-config">
+            <hlm:latestTag pattern="${sf.config.rev}">
+              <hlm:tagSet refid="hg.tags.id${refid}"/> 
+            </hlm:latestTag>
+          </hlm:update>
+        </hlm:scm>
+      </else>
+    </if>
   </target>
 
   <target name="get-sf-project">
-    <echo message="Getting project configuration${sf.project.repo}"/>
-    <hlm:scm verbose="true" scmUrl="scm:hg:${sf.project.repo}">
-      <hlm:checkout basedir="${sf.target.dir}/build/config"/>
-      <hlm:tags basedir="${sf.target.dir}/build/config" reference="hg.tags.id${refid}"/>
-      <hlm:update basedir="${sf.target.dir}/build/config">
-        <hlm:latestTag pattern="${sf.project.rev}">
-          <hlm:tagSet refid="hg.tags.id${refid}"/>
-        </hlm:latestTag>
-      </hlm:update>
-    </hlm:scm>
+    <if>
+      <isset property="sf.project.dir"/>
+      <then>
+        <echo message="Getting FBF project from dir ${sf.config.dir}"/>
+        <copy todir="${sf.target.dir}/build/config">
+          <fileset dir="${sf.config.dir}"/>
+        </copy>
+      </then>
+      <else>
+        <echo message="Getting FBF project from repository ${sf.project.repo}"/>
+        <hlm:scm verbose="true" scmUrl="scm:hg:${sf.project.repo}">
+          <hlm:checkout basedir="${sf.target.dir}/build/config"/>
+          <hlm:tags basedir="${sf.target.dir}/build/config" reference="hg.tags.id${refid}"/>
+          <hlm:update basedir="${sf.target.dir}/build/config">
+            <hlm:latestTag pattern="${sf.project.rev}">
+              <hlm:tagSet refid="hg.tags.id${refid}"/>
+            </hlm:latestTag>
+          </hlm:update>
+        </hlm:scm>
+      </else>
+    </if>
   </target>
 
 
