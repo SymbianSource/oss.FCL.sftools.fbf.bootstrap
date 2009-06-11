@@ -22,20 +22,19 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="D:\\fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-#my $sNUMBERS_FILE="\\\\sym-build01\\f\$\\numbers.txt";
-my $sNUMBERS_FILE="d:\\numbers.txt";
+my $sNUMBERS_FILE="\\\\v800008.ad-sfpd.intra\\g\$\\numbers.txt";
 my $sLETTERS_FILE="D:\\letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
 my $sFbfProjectRepo = '';
 my $sFbfProjectDir = '';
-my $sFbfConfigRepo="\\\\lon-engbuild87\\d\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
+my $sFbfConfigRepo="\\\\v800008.ad-sfpd.intra\\g\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $sJobLabel = '';
 my $nCmdLineNumber;
 GetOptions(('label:s' => \$sJobLabel, 'configrepo:s' => \$sFbfConfigRepo, 'configdir:s' => \$sFbfConfigDir, 'projectrepo:s' => \$sFbfProjectRepo, 'projectdir:s' => \$sFbfProjectDir, 'number:s' => \$nCmdLineNumber));
 
-if (!$sJobLabel or !$sFbfProjectRepo)
+if (!$sJobLabel or !($sFbfProjectRepo or $sFbfProjectDir))
 {
 	print "Usage: build_package.pl --label=<label> --projectrepo=<project repo> | --projectdir=<project dir>\n\t[--configrepo=<config repo> | --configdir=<config dir>]\n";
 	exit(0);
