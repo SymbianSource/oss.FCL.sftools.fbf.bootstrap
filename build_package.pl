@@ -28,17 +28,35 @@ my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the let
 
 my $sFbfProjectRepo = '';
 my $sFbfProjectDir = '';
-my $sFbfConfigRepo="\\\\v800008.ad-sfpd.intra\\g\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
+my $sFbfConfigRepo="\\\\v800008.ad-sfpd.intra\\g\$\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $sJobLabel = '';
 my $nCmdLineNumber;
-GetOptions(('label:s' => \$sJobLabel, 'configrepo:s' => \$sFbfConfigRepo, 'configdir:s' => \$sFbfConfigDir, 'projectrepo:s' => \$sFbfProjectRepo, 'projectdir:s' => \$sFbfProjectDir, 'number:s' => \$nCmdLineNumber));
+my $bTestBuild = 0;
+GetOptions((
+	'label:s' => \$sJobLabel,
+	'configrepo:s' => \$sFbfConfigRepo,
+	'configdir:s' => \$sFbfConfigDir,
+	'projectrepo:s' => \$sFbfProjectRepo,
+	'projectdir:s' => \$sFbfProjectDir,
+	'number:s' => \$nCmdLineNumber,
+	'testbuild!' => \$bTestBuild
+));
 
 if (!$sJobLabel or !($sFbfProjectRepo or $sFbfProjectDir))
 {
-	print "Usage: build_package.pl --label=<label> --projectrepo=<project repo> | --projectdir=<project dir>\n\t[--configrepo=<config repo> | --configdir=<config dir>]\n";
+	print "Usage: build_package.pl --label=LABEL (--projectrepo=REPO | --projectdir=DIR) OPTIONS\n";
+	print "\tOPTIONS:\n";
+	print "\t--configrepo=REPO Use REPO location for the config instead of \\\\v800008\\g\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\config\\pkgbuild\\n";
+	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo)\n";
+	print "\t--number=N Force build number to N\n";
+	print "\t--testbuild Use d:\\numbers_test.txt for numbers and d:\\SF_builds_test to publish results\n";
 	exit(0);
 }
+
+my $sTestBuildOpts = "";
+$sTestBuildOpts = "-Dsf.spec.publish.networkdrive=d:\\SF_builds_test" if ( $bTestBuild );
+$sNUMBERS_FILE = "d:\\numbers_test.txt" if ( $bTestBuild );
 
 my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
 
@@ -79,8 +97,8 @@ die "Could not acquire drive letter" if (! $sDriveLetter);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-print("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter:\n");
-system("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter:");
+print("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts\n");
+system("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts");
 
 print "###### EXECUTE BUILD ######\n";
 print("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter:\n");
@@ -187,8 +205,9 @@ sub acquire_drive_letter
 					}
 					else
 					{
-						# do nothing
-						print "forced release of letter: $sLetter\n";
+						# lease has expired: unsubst drive letter and don't add to hash
+						system("subst $sLetter: /d");
+						print "forced release of letter: $sLetter (and drive unsubsted)\n";
 					}
 				}
 			}
