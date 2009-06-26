@@ -22,13 +22,13 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="D:\\fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sNUMBERS_FILE="\\\\v800008.ad-sfpd.intra\\g\$\\numbers.txt";
+my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers.txt";
 my $sLETTERS_FILE="D:\\letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
 my $sFbfProjectRepo = '';
 my $sFbfProjectDir = '';
-my $sFbfConfigRepo="\\\\v800008.ad-sfpd.intra\\g\$\\mercurial_internal\\fbf\\configs\\pkgbuild";
+my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $sJobLabel = '';
 my $nCmdLineNumber;
@@ -47,7 +47,7 @@ if (!$sJobLabel or !($sFbfProjectRepo or $sFbfProjectDir))
 {
 	print "Usage: build_package.pl --label=LABEL (--projectrepo=REPO | --projectdir=DIR) OPTIONS\n";
 	print "\tOPTIONS:\n";
-	print "\t--configrepo=REPO Use REPO location for the config instead of \\\\v800008\\g\$\\mercurial_development\\oss\\FCL\\interim\\fbf\\config\\pkgbuild\\n";
+	print "\t--configrepo=REPO Use REPO location for the config instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild\n";
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo)\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--testbuild Use d:\\numbers_test.txt for numbers and d:\\SF_builds_test to publish results\n";
@@ -55,7 +55,7 @@ if (!$sJobLabel or !($sFbfProjectRepo or $sFbfProjectDir))
 }
 
 my $sTestBuildOpts = "";
-$sTestBuildOpts = "-Dsf.spec.publish.networkdrive=d:\\SF_builds_test" if ( $bTestBuild );
+$sTestBuildOpts = "-Dsf.spec.publish.networkdrive=d:\\SF_builds_test -Dsf.spec.publish.rootdir=d:\\SF_builds_test" if ( $bTestBuild );
 $sNUMBERS_FILE = "d:\\numbers_test.txt" if ( $bTestBuild );
 
 my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
