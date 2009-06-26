@@ -30,11 +30,9 @@ my $sFbfProjectRepo = '';
 my $sFbfProjectDir = '';
 my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
-my $sJobLabel = '';
 my $nCmdLineNumber;
 my $bTestBuild = 0;
 GetOptions((
-	'label:s' => \$sJobLabel,
 	'configrepo:s' => \$sFbfConfigRepo,
 	'configdir:s' => \$sFbfConfigDir,
 	'projectrepo:s' => \$sFbfProjectRepo,
@@ -43,22 +41,42 @@ GetOptions((
 	'testbuild!' => \$bTestBuild
 ));
 
-if (!$sJobLabel or !($sFbfProjectRepo or $sFbfProjectDir))
+if (!$sFbfProjectRepo and !$sFbfProjectDir)
 {
-	print "Usage: build_package.pl --label=LABEL (--projectrepo=REPO | --projectdir=DIR) OPTIONS\n";
-	print "\tOPTIONS:\n";
+	print "Usage: build_package.pl --projectrepo=REPO [OPTIONS]\n";
+	print "where OPTIONS are:\n";
+	print "\t--projectrepo=REPO Use REPO location for the project.\n";
+	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo). Option --testbuild is required.\n";
 	print "\t--configrepo=REPO Use REPO location for the config instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild\n";
-	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo)\n";
+	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo). Option --testbuild is required.\n";
 	print "\t--number=N Force build number to N\n";
-	print "\t--testbuild Use d:\\numbers_test.txt for numbers and d:\\SF_builds_test to publish results\n";
+	print "\t--testbuild Use d:\\numbers_test.txt for numbers and disable publishing\n";
+	exit(0);
+}
+
+if ($sFbfProjectDir and !$bTestBuild)
+{
+	print "Error: Option --projectdir requires --testbuild\n";
+	exit(0);
+}
+
+if ($sFbfConfigDir and !$bTestBuild)
+{
+	print "Error: Option --configdir requires --testbuild\n";
 	exit(0);
 }
 
 my $sTestBuildOpts = "";
-$sTestBuildOpts = "-Dsf.spec.publish.networkdrive=d:\\SF_builds_test -Dsf.spec.publish.rootdir=d:\\SF_builds_test" if ( $bTestBuild );
+$sTestBuildOpts = "-Dsf.spec.publish.enable=false" if ( $bTestBuild );
 $sNUMBERS_FILE = "d:\\numbers_test.txt" if ( $bTestBuild );
 
+my $sLabelBaseString = $sFbfProjectRepo;
+$sLabelBaseString = $sFbfProjectDir if ($sFbfProjectDir);
+$sLabelBaseString =~ m,.*[\\/]([^\\^/]+),;
+my $sJobLabel = $1;
+$sJobLabel = $sLabelBaseString if (! $1);
 my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
+print "Created project dir $sJOB_BASE_DIR\\$sJobLabel\n";
 
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
@@ -78,7 +96,16 @@ if (!-f $sNUMBERS_FILE)
 	close FILE;
 }
 
-my $nUnformattedNumber = ( $nCmdLineNumber ? $nCmdLineNumber : get_job_number($sFbfProjectRepo));
+my $nUnformattedNumber = 0;
+if ($nCmdLineNumber)
+{
+	$nUnformattedNumber = $nCmdLineNumber;
+}
+elsif ($sFbfProjectRepo)
+{
+	my $sRevZeroHash = get_rev_zero_hash($sFbfProjectRepo);
+	$nUnformattedNumber = get_job_number($sRevZeroHash);
+}
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
 
 # check that $sLETTERS_FILE exists, otherwise create it
@@ -126,6 +153,22 @@ sub mkdir_unique
 	}
 	
 	return $sNewDirName;
+}
+
+sub get_rev_zero_hash
+{
+	my ($sFbfProjectRepo) = @_;
+	
+	my $sOutput = `hg -R $sFbfProjectRepo identify -r0`;
+	
+	# remove leading and trailing spaces
+	$sOutput =~ s,^\s+,,;
+	$sOutput =~ s,\s+$,,;
+	
+	# remove tags e.g. "1fc39a7e9d79 tip"
+	$sOutput =~ s,([0-9a-z]+)\s+.*,$1,;
+	
+	return $sOutput;
 }
 
 sub get_job_number
