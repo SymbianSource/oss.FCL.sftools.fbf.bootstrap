@@ -62,9 +62,9 @@
     <if>
       <isset property="sf.project.dir"/>
       <then>
-        <echo message="Getting FBF project from dir ${sf.config.dir}"/>
+        <echo message="Getting FBF project from dir ${sf.project.dir}"/>
         <copy todir="${sf.target.dir}/build/config">
-          <fileset dir="${sf.config.dir}"/>
+          <fileset dir="${sf.project.dir}"/>
         </copy>
       </then>
       <else>
