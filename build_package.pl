@@ -75,6 +75,7 @@ $sLabelBaseString = $sFbfProjectDir if ($sFbfProjectDir);
 $sLabelBaseString =~ m,.*[\\/]([^\\^/]+),;
 my $sJobLabel = $1;
 $sJobLabel = $sLabelBaseString if (! $1);
+mkdir($sJOB_BASE_DIR) if (!-d$sJOB_BASE_DIR);
 my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
 print "Created project dir $sJOB_BASE_DIR\\$sJobLabel\n";
 
