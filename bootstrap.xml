@@ -48,7 +48,7 @@
         <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repo}">
           <hlm:checkout basedir="${sf.target.dir}/sf-config"/>
           <hlm:update basedir="${sf.target.dir}/sf-config">
-            <hlm:tag name="${{sf.config.rev}"/>
+            <hlm:tag name="${sf.config.rev}"/>
           </hlm:update>
         </hlm:scm>
       </else>
