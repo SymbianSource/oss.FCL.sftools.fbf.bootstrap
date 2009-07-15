@@ -47,11 +47,8 @@
         <echo message="Getting FBF configuration from repository ${sf.config.repo}"/>
         <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repo}">
           <hlm:checkout basedir="${sf.target.dir}/sf-config"/>
-          <hlm:tags basedir="${sf.target.dir}/sf-config" reference="hg.tags.id1"/>
           <hlm:update basedir="${sf.target.dir}/sf-config">
-            <hlm:latestTag pattern="${sf.config.rev}">
-              <hlm:tagSet refid="hg.tags.id1"/> 
-            </hlm:latestTag>
+            <hlm:tag name="${{sf.config.rev}"/>
           </hlm:update>
         </hlm:scm>
       </else>
@@ -71,11 +68,8 @@
         <echo message="Getting FBF project from repository ${sf.project.repo}"/>
         <hlm:scm verbose="true" scmUrl="scm:hg:${sf.project.repo}">
           <hlm:checkout basedir="${sf.target.dir}/build/config"/>
-          <hlm:tags basedir="${sf.target.dir}/build/config" reference="hg.tags.id2"/>
           <hlm:update basedir="${sf.target.dir}/build/config">
-            <hlm:latestTag pattern="${sf.project.rev}">
-              <hlm:tagSet refid="hg.tags.id2"/>
-            </hlm:latestTag>
+            <hlm:tag name="${sf.project.rev}"/>
           </hlm:update>
         </hlm:scm>
       </else>

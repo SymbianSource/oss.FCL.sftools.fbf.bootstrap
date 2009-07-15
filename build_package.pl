@@ -45,9 +45,9 @@ if (!$sFbfProjectRepo and !$sFbfProjectDir)
 {
 	print "Usage: build_package.pl --projectrepo=REPO [OPTIONS]\n";
 	print "where OPTIONS are:\n";
-	print "\t--projectrepo=REPO Use REPO location for the project.\n";
+	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project.\n";
 	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo). Option --testbuild is required.\n";
-	print "\t--configrepo=REPO Use REPO location for the config instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild\n";
+	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild)\n";
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo). Option --testbuild is required.\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--testbuild Use d:\\numbers_test.txt for numbers and disable publishing\n";
@@ -66,6 +66,19 @@ if ($sFbfConfigDir and !$bTestBuild)
 	exit(0);
 }
 
+my $sFbfProjectRev = '';
+if ($sFbfProjectRepo =~ m,(.*)#(.*),)
+{
+	$sFbfProjectRepo = $1;
+	$sFbfProjectRev = $2;
+}
+my $sFbfConfigRev = '';
+if ($sFbfConfigRepo =~ m,(.*)#(.*),)
+{
+	$sFbfConfigRepo = $1;
+	$sFbfConfigRev = $2;
+}
+
 my $sTestBuildOpts = "";
 $sTestBuildOpts = "-Dsf.spec.publish.enable=false" if ( $bTestBuild );
 $sNUMBERS_FILE = "d:\\numbers_test.txt" if ( $bTestBuild );
@@ -82,8 +95,10 @@ print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
 print "###### BOOTSTRAP ######\n";
 my $sConfigArg = "-Dsf.config.repo=$sFbfConfigRepo";
+$sConfigArg .= " -Dsf.config.rev=$sFbfConfigRev" if ($sFbfConfigRev);
 $sConfigArg = "-Dsf.config.dir=$sFbfConfigDir" if ($sFbfConfigDir);
 my $sProjectArg = "-Dsf.project.repo=$sFbfProjectRepo";
+$sProjectArg .= " -Dsf.project.rev=$sFbfProjectRev" if ($sFbfProjectRev);
 $sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
 print("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir\n");
 system("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir");
