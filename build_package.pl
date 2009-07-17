@@ -144,8 +144,8 @@ print("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveL
 system("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts");
 
 print "###### EXECUTE BUILD ######\n";
-print("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter:\n");
-system("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter:");
+print("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts\n");
+system("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts");
 
 # release the drive letter
 release_drive_letter($sDriveLetter);
