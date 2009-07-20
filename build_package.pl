@@ -32,13 +32,15 @@ my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
 my $bTestBuild = 0;
+my $bPublish = 1;
 GetOptions((
 	'configrepo:s' => \$sFbfConfigRepo,
 	'configdir:s' => \$sFbfConfigDir,
 	'projectrepo:s' => \$sFbfProjectRepo,
 	'projectdir:s' => \$sFbfProjectDir,
 	'number:s' => \$nCmdLineNumber,
-	'testbuild!' => \$bTestBuild
+	'testbuild!' => \$bTestBuild,
+	'publish!' => \$bPublish
 ));
 
 if (!$sFbfProjectRepo and !$sFbfProjectDir)
@@ -46,23 +48,24 @@ if (!$sFbfProjectRepo and !$sFbfProjectDir)
 	print "Usage: build_package.pl --projectrepo=REPO [OPTIONS]\n";
 	print "where OPTIONS are:\n";
 	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project.\n";
-	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo). Option --testbuild is required.\n";
+	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo). Option --nopublish is required.\n";
 	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild)\n";
-	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo). Option --testbuild is required.\n";
+	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo). Option --nopublish is required.\n";
 	print "\t--number=N Force build number to N\n";
-	print "\t--testbuild Use d:\\numbers_test.txt for numbers and disable publishing\n";
+	print "\t--testbuild Set category to package.test and use Tnnn numbering\n";
+	print "\t--nopublish Use d:\\numbers_test.txt for numbers and disable publishing\n";
 	exit(0);
 }
 
-if ($sFbfProjectDir and !$bTestBuild)
+if ($sFbfProjectDir and $bPublish)
 {
-	print "Error: Option --projectdir requires --testbuild\n";
+	print "Error: Option --projectdir requires --nopublish\n";
 	exit(0);
 }
 
-if ($sFbfConfigDir and !$bTestBuild)
+if ($sFbfConfigDir and $bPublish)
 {
-	print "Error: Option --configdir requires --testbuild\n";
+	print "Error: Option --configdir requires --nopublish\n";
 	exit(0);
 }
 
@@ -79,9 +82,11 @@ if ($sFbfConfigRepo =~ m,(.*)#(.*),)
 	$sFbfConfigRev = $2;
 }
 
-my $sTestBuildOpts = "";
-$sTestBuildOpts = "-Dsf.spec.publish.enable=false" if ( $bTestBuild );
-$sNUMBERS_FILE = "d:\\numbers_test.txt" if ( $bTestBuild );
+my $sTestBuildOpt = "";
+$sTestBuildOpt = "-Dsf.spec.publish.diamonds.category=package.test" if ( $bTestBuild );
+my $sNoPublishOpt = "";
+$sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
+$sNUMBERS_FILE = "d:\\numbers_test.txt" if ( !$bPublish );
 
 my $sLabelBaseString = $sFbfProjectRepo;
 $sLabelBaseString = $sFbfProjectDir if ($sFbfProjectDir);
@@ -120,9 +125,12 @@ if ($nCmdLineNumber)
 elsif ($sFbfProjectRepo)
 {
 	my $sRevZeroHash = get_rev_zero_hash($sFbfProjectRepo);
-	$nUnformattedNumber = get_job_number($sRevZeroHash);
+	my $sJobNumberKey = $sRevZeroHash;
+	$sJobNumberKey .= ".T" if ($bTestBuild);
+	$nUnformattedNumber = get_job_number($sJobNumberKey);
 }
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
+$nJobNumber = "T$nJobNumber" if ($bTestBuild);
 
 # check that $sLETTERS_FILE exists, otherwise create it
 if (!-f $sLETTERS_FILE)
@@ -140,12 +148,12 @@ die "Could not acquire drive letter" if (! $sDriveLetter);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-print("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts\n");
-system("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts");
+print("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
+system("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
 
 print "###### EXECUTE BUILD ######\n";
-print("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts\n");
-system("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpts");
+print("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
+system("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
 
 # release the drive letter
 release_drive_letter($sDriveLetter);
