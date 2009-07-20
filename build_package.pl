@@ -31,7 +31,7 @@ my $sFbfProjectDir = '';
 my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
-my $bTestBuild = 0;
+my $bProduction = 0;
 my $bPublish = 1;
 GetOptions((
 	'configrepo:s' => \$sFbfConfigRepo,
@@ -39,7 +39,7 @@ GetOptions((
 	'projectrepo:s' => \$sFbfProjectRepo,
 	'projectdir:s' => \$sFbfProjectDir,
 	'number:s' => \$nCmdLineNumber,
-	'testbuild!' => \$bTestBuild,
+	'production!' => \$bProduction,
 	'publish!' => \$bPublish
 ));
 
@@ -52,7 +52,7 @@ if (!$sFbfProjectRepo and !$sFbfProjectDir)
 	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild)\n";
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo). Option --nopublish is required.\n";
 	print "\t--number=N Force build number to N\n";
-	print "\t--testbuild Set category to package.test and use Tnnn numbering\n";
+	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
 	print "\t--nopublish Use d:\\numbers_test.txt for numbers and disable publishing\n";
 	exit(0);
 }
@@ -83,7 +83,7 @@ if ($sFbfConfigRepo =~ m,(.*)#(.*),)
 }
 
 my $sTestBuildOpt = "";
-$sTestBuildOpt = "-Dsf.spec.publish.diamonds.category=package.test" if ( $bTestBuild );
+$sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=production" if ( $bProduction );
 my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
 $sNUMBERS_FILE = "d:\\numbers_test.txt" if ( !$bPublish );
@@ -126,11 +126,11 @@ elsif ($sFbfProjectRepo)
 {
 	my $sRevZeroHash = get_rev_zero_hash($sFbfProjectRepo);
 	my $sJobNumberKey = $sRevZeroHash;
-	$sJobNumberKey .= ".T" if ($bTestBuild);
+	$sJobNumberKey .= ".T" if (!$bProduction);
 	$nUnformattedNumber = get_job_number($sJobNumberKey);
 }
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
-$nJobNumber = "T$nJobNumber" if ($bTestBuild);
+$nJobNumber = "T$nJobNumber" if (!$bProduction);
 
 # check that $sLETTERS_FILE exists, otherwise create it
 if (!-f $sLETTERS_FILE)
