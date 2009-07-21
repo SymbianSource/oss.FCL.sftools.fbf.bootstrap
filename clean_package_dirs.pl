@@ -40,7 +40,7 @@ for my $sDir ( @asDirs )
 	
 	#print "--- $sDir\n";
 	
-	if ( $sDir =~ /^([^.]+)\.(\d+)/ )
+	if ( $sDir =~ /^([^.]+)\.T?(\d+)/ )
 	{
 		my $sBaseName = $1;
 		my $sBuildNumber = $2;
