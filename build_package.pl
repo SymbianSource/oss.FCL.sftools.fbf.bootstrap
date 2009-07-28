@@ -22,52 +22,61 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="D:\\fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers.txt";
+my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
 my $sLETTERS_FILE="D:\\letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
-my $sFbfProjectRepo = '';
+my $sFbfProjectRepo = "\\\\bishare\\mercurial_internal\\fbf\\projects\\packages";
 my $sFbfProjectDir = '';
+my $sSubProject = '';
+#my $sSourcesFile = '';
+#my $sModelFile = '';
 my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
 my $bProduction = 0;
 my $bPublish = 1;
 GetOptions((
-	'configrepo:s' => \$sFbfConfigRepo,
-	'configdir:s' => \$sFbfConfigDir,
-	'projectrepo:s' => \$sFbfProjectRepo,
-	'projectdir:s' => \$sFbfProjectDir,
-	'number:s' => \$nCmdLineNumber,
+	'configrepo=s' => \$sFbfConfigRepo,
+	'configdir=s' => \$sFbfConfigDir,
+	'projectrepo=s' => \$sFbfProjectRepo,
+	'projectdir=s' => \$sFbfProjectDir,
+	'subproj=s' => \$sSubProject,
+	#'sources=s' => \$sSourcesFile,
+	#'model=s' => \$sModelFile,
+	'number=s' => \$nCmdLineNumber,
 	'production!' => \$bProduction,
 	'publish!' => \$bPublish
 ));
 
-if (!$sFbfProjectRepo and !$sFbfProjectDir)
+if (!$sSubProject)
 {
-	print "Usage: build_package.pl --projectrepo=REPO [OPTIONS]\n";
+	print "Usage: build_package.pl --subproj=RELPATH [OPTIONS]\n";
 	print "where OPTIONS are:\n";
-	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project.\n";
-	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo). Option --nopublish is required.\n";
+	print "\t--subproj=RELPATH Select subproject located at RELPATH (relative to the root of the project repository)\n";
+	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project (instead of \\\\bishare\\mercurial_internal\\fbf\\projects\\packages)\n";
+	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo).\n";
+	#print "\t--sources=FILE ...\n";
+	#print "\t--model=FILE ...\n";
 	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild)\n";
-	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo). Option --nopublish is required.\n";
+	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
 	print "\t--nopublish Use d:\\numbers_test.txt for numbers and disable publishing\n";
 	exit(0);
 }
 
-if ($sFbfProjectDir and $bPublish)
+if ($sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
 {
-	print "Error: Option --projectdir requires --nopublish\n";
+	print "Error: Option --subproj must be in the format codeline/layer/package (e.g. MCL/os/boardsupport)\n";
 	exit(0);
 }
 
-if ($sFbfConfigDir and $bPublish)
-{
-	print "Error: Option --configdir requires --nopublish\n";
-	exit(0);
-}
+#if (!$sFbfProjectRepo and !$sFbfProjectDir and (!$sSourcesFile or !$sModelFile))
+#{
+#	print "Error: If you don't provide --projectrepo or --projectdir then you have to provide both --sources and --model\n";
+#	exit(0);
+#}
 
 my $sFbfProjectRev = '';
 if ($sFbfProjectRepo =~ m,(.*)#(.*),)
@@ -88,11 +97,29 @@ my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
 $sNUMBERS_FILE = "d:\\numbers_test.txt" if ( !$bPublish );
 
-my $sLabelBaseString = $sFbfProjectRepo;
-$sLabelBaseString = $sFbfProjectDir if ($sFbfProjectDir);
-$sLabelBaseString =~ m,.*[\\/]([^\\^/]+),;
-my $sJobLabel = $1;
-$sJobLabel = $sLabelBaseString if (! $1);
+my $sJobLabel = 'job';
+if ($sSubProject)
+{
+	$sSubProject =~ m,^([^/]+)/[^/]+/([^/]+)$,;
+	$sJobLabel = $2;
+}
+elsif ($sFbfProjectRepo)
+{
+	$sFbfProjectRepo =~ m,(.*[\\/])?([^\\^/]+),;
+	$sJobLabel = $2;
+}
+elsif ($sFbfProjectDir)
+{
+	$sFbfProjectDir =~ m,(.*[\\/])?([^\\^/]+),;
+	$sJobLabel = $2;
+}
+#elsif ($sSourcesFile)
+#{
+#	$sSourcesFile =~ m,/(adaptation|app|mw|os|ostools|tools)[\\/]([^\\^/]+),i;
+#	$sJobLabel = $2;
+#	$sSourcesFile =~ m,(.*[\\/])?([^\\^/]+),;
+#	$sJobLabel = $2 if (!$sJobLabel);
+#}
 mkdir($sJOB_BASE_DIR) if (!-d$sJOB_BASE_DIR);
 my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
 print "Created project dir $sJOB_BASE_DIR\\$sJobLabel\n";
@@ -124,8 +151,19 @@ if ($nCmdLineNumber)
 }
 elsif ($sFbfProjectRepo)
 {
-	my $sRevZeroHash = get_rev_zero_hash($sFbfProjectRepo);
-	my $sJobNumberKey = $sRevZeroHash;
+	my $sJobNumberKey = '';
+	if ($sSubProject)
+	{
+		# key = <package>_<codeline>, e.g. for subproj=MCL/os/boardsupport -> key=boardsupport_MCL
+		$sSubProject =~ m,^([^/]+)/[^/]+/([^/]+)$,;
+		$sJobNumberKey = "$2_$1";
+	}
+	else
+	{
+		# key = hash of the rev.0 of the package project repo
+		my $sRevZeroHash = get_rev_zero_hash($sFbfProjectRepo);
+		$sJobNumberKey = $sRevZeroHash;
+	}
 	$sJobNumberKey .= ".T" if (!$bProduction);
 	$nUnformattedNumber = get_job_number($sJobNumberKey);
 }
@@ -145,15 +183,17 @@ my $sDriveLetter = acquire_drive_letter();
 print "acquired drive letter: $sDriveLetter\n";
 die "Could not acquire drive letter" if (! $sDriveLetter);
 
+my $sSubProjArg = '';
+$sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-print("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
-system("hlm sf-prep -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
+print("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
+system("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
 
 print "###### EXECUTE BUILD ######\n";
-print("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
-system("hlm sf-build-all -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
+print("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
+system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
 
 # release the drive letter
 release_drive_letter($sDriveLetter);
