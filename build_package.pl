@@ -19,11 +19,11 @@ use Getopt::Long;
 use File::Path;
 
 my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
-my $sJOB_BASE_DIR="D:\\fbf_project";
+my $sJOB_BASE_DIR="fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
 my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
-my $sLETTERS_FILE="D:\\letters.txt";
+my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
 my $sFbfProjectRepo = "\\\\bishare\\mercurial_internal\\fbf\\projects\\packages";
@@ -62,7 +62,7 @@ if (!$sSubProject)
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
-	print "\t--nopublish Use d:\\numbers_test.txt for numbers and disable publishing\n";
+	print "\t--nopublish Use numbers_test.txt for numbers and disable publishing\n";
 	exit(0);
 }
 
@@ -77,6 +77,11 @@ if ($sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
 #	print "Error: If you don't provide --projectrepo or --projectdir then you have to provide both --sources and --model\n";
 #	exit(0);
 #}
+
+my $sWORKING_DRIVE = "G:";
+my $output = `G: 2>&1`;
+$sWORKING_DRIVE = "D:" if ($output =~ /The device is not ready./);
+print "Will use drive $sWORKING_DRIVE as working drive for this build\n";
 
 my $sFbfProjectRev = '';
 if ($sFbfProjectRepo =~ m,(.*)#(.*),)
@@ -120,9 +125,9 @@ elsif ($sFbfProjectDir)
 #	$sSourcesFile =~ m,(.*[\\/])?([^\\^/]+),;
 #	$sJobLabel = $2 if (!$sJobLabel);
 #}
-mkdir($sJOB_BASE_DIR) if (!-d$sJOB_BASE_DIR);
-my $sJobDir = mkdir_unique("$sJOB_BASE_DIR\\$sJobLabel");
-print "Created project dir $sJOB_BASE_DIR\\$sJobLabel\n";
+mkdir("$sWORKING_DRIVE\\$sJOB_BASE_DIR") if (!-d "$sWORKING_DRIVE\\$sJOB_BASE_DIR");
+my $sJobDir = mkdir_unique("$sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
+print "Created project dir $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel\n";
 
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
@@ -171,9 +176,9 @@ my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
 $nJobNumber = "T$nJobNumber" if (!$bProduction);
 
 # check that $sLETTERS_FILE exists, otherwise create it
-if (!-f $sLETTERS_FILE)
+if (!-f "$sWORKING_DRIVE\\$sLETTERS_FILE")
 {
-	open FILE, ">$sLETTERS_FILE";
+	open FILE, ">$sWORKING_DRIVE\\$sLETTERS_FILE";
 	print FILE "\n";
 	close FILE;
 }
@@ -291,7 +296,7 @@ sub acquire_drive_letter
 	my $bAcquired = 0;
 	do
 	{
-		open(FILE, "+<$sLETTERS_FILE") or die("Can't open $sLETTERS_FILE");
+		open(FILE, "+<$sWORKING_DRIVE\\$sLETTERS_FILE") or die("Can't open $sWORKING_DRIVE\\$sLETTERS_FILE");
 		if ( flock(FILE, 6) )
 		{
 			my $sLine;
@@ -362,7 +367,7 @@ sub release_drive_letter
 	my $bAcquired = 0;
 	do
 	{
-		open(FILE, "+<$sLETTERS_FILE") or die("Can't open $sLETTERS_FILE");
+		open(FILE, "+<$sWORKING_DRIVE\\$sLETTERS_FILE") or die("Can't open $sWORKING_DRIVE\\$sLETTERS_FILE");
 		if ( flock(FILE, 6) )
 		{
 			my $sLine;
