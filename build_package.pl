@@ -188,17 +188,19 @@ my $sDriveLetter = acquire_drive_letter();
 print "acquired drive letter: $sDriveLetter\n";
 die "Could not acquire drive letter" if (! $sDriveLetter);
 
+my $sJobRootDirArg = "-Dsf.spec.job.rootdir=$sWORKING_DRIVE\\fbf_job";
+
 my $sSubProjArg = '';
 $sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-print("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
-system("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
+print("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
+system("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg");
 
 print "###### EXECUTE BUILD ######\n";
-print("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt\n");
-system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt");
+print("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
+system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg");
 
 # release the drive letter
 release_drive_letter($sDriveLetter);
