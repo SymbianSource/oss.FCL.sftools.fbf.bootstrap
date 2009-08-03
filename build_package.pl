@@ -35,6 +35,8 @@ my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
 my $bProduction = 0;
+my $sDiamondsTag = '';
+my $bHudson = 0;
 my $bPublish = 1;
 GetOptions((
 	'configrepo=s' => \$sFbfConfigRepo,
@@ -46,6 +48,8 @@ GetOptions((
 	#'model=s' => \$sModelFile,
 	'number=s' => \$nCmdLineNumber,
 	'production!' => \$bProduction,
+	'tag=s' => \$sDiamondsTag,
+	'hudson!' => \$bHudson,
 	'publish!' => \$bPublish
 ));
 
@@ -62,13 +66,21 @@ if (!$sSubProject)
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
+	print "\t--tag=TAG Apply Diamonds tag TAG to this build (exclusive with --production)\n";
+	print "\t--hudson Checks that there is at least NUMBER_OF_PROCESSORS X 10 GB available on the working drive\n";
 	print "\t--nopublish Use numbers_test.txt for numbers and disable publishing\n";
 	exit(0);
 }
 
 if ($sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
 {
-	print "Error: Option --subproj must be in the format codeline/layer/package (e.g. MCL/os/boardsupport)\n";
+	print "ERROR: Option --subproj must be in the format codeline/layer/package (e.g. MCL/os/boardsupport)\n";
+	exit(0);
+}
+
+if ($bProduction and $sDiamondsTag)
+{
+	print "ERROR: Options --production and --tag are mutually exclusive.\n";
 	exit(0);
 }
 
@@ -82,6 +94,21 @@ my $sWORKING_DRIVE = "G:";
 my $output = `G: 2>&1`;
 $sWORKING_DRIVE = "D:" if ($output =~ /The device is not ready./);
 print "Will use drive $sWORKING_DRIVE as working drive for this build\n";
+
+if ($bHudson)
+{
+	my $nProcessors = $ENV{'NUMBER_OF_PROCESSORS'};
+	my $diroutput = `dir /-C $sWORKING_DRIVE`;
+	my $nBytesFree = 0;
+	$nBytesFree = $1 if ($diroutput =~ /(\d+) bytes free/);
+	my $nNeededSpace = 10*$nProcessors*1073741824;
+	#print "Needed space is $nNeededSpace\n";
+	if ($nBytesFree < $nNeededSpace)
+	{
+		print "ERROR: Available disk space on working drive ($nBytesFree bytes) is not enough to run a package build with Hudson.\n";
+		exit(1);
+	}
+}
 
 my $sFbfProjectRev = '';
 if ($sFbfProjectRepo =~ m,(.*)#(.*),)
@@ -98,6 +125,7 @@ if ($sFbfConfigRepo =~ m,(.*)#(.*),)
 
 my $sTestBuildOpt = "";
 $sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=production" if ( $bProduction );
+$sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=$sDiamondsTag" if ( $sDiamondsTag );
 my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
 $sNUMBERS_FILE = "d:\\numbers_test.txt" if ( !$bPublish );
