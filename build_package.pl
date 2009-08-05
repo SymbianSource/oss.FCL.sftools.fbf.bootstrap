@@ -231,6 +231,9 @@ print "###### EXECUTE BUILD ######\n";
 print("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
 system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg");
 
+print("cd $sBOOTSTRAP_DIR\n");
+chdir("$sBOOTSTRAP_DIR");
+
 # release the drive letter
 release_drive_letter($sDriveLetter);
 system("subst $sDriveLetter: /d"); # this is not required, but it's a good idea to keep things in order
