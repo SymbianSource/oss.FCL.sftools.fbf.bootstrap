@@ -244,10 +244,12 @@ if ($bHudson)
 		print "rmdir /S $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel\n";
 		system("rmdir /S /Q $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
 	}
-	if (-d "$sWORKING_DRIVE\\fbf_job\\$sJobNumberKey.$nJobNumber") # build drive
+	my $sBuildLabel = $sJobNumberKey;
+	$sBuildLabel =~ s/\.T$//;
+	if (-d "$sWORKING_DRIVE\\fbf_job\\$sBuildLabel.$nJobNumber") # build drive
 	{
-		print "rmdir /S $sWORKING_DRIVE\\fbf_job\\$sJobNumberKey.$nJobNumber\n";
-		system("rmdir /S /Q $sWORKING_DRIVE\\fbf_job\\$sJobNumberKey.$nJobNumber");
+		print "rmdir /S $sWORKING_DRIVE\\fbf_job\\$sBuildLabel.$nJobNumber\n";
+		system("rmdir /S /Q $sWORKING_DRIVE\\fbf_job\\$sBuildLabel.$nJobNumber");
 	}
 }
 
