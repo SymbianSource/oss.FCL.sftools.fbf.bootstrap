@@ -155,7 +155,7 @@ elsif ($sFbfProjectDir)
 #}
 mkdir("$sWORKING_DRIVE\\$sJOB_BASE_DIR") if (!-d "$sWORKING_DRIVE\\$sJOB_BASE_DIR");
 my $sJobDir = mkdir_unique("$sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
-print "Created project dir $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel\n";
+print "Created project dir $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobDir\n";
 
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
@@ -177,6 +177,7 @@ if (!-f $sNUMBERS_FILE)
 	close FILE;
 }
 
+my $sJobNumberKey = '';
 my $nUnformattedNumber = 0;
 if ($nCmdLineNumber)
 {
@@ -184,7 +185,6 @@ if ($nCmdLineNumber)
 }
 elsif ($sFbfProjectRepo)
 {
-	my $sJobNumberKey = '';
 	if ($sSubProject)
 	{
 		# key = <package>_<codeline>, e.g. for subproj=MCL/os/boardsupport -> key=boardsupport_MCL
@@ -202,6 +202,7 @@ elsif ($sFbfProjectRepo)
 }
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
 $nJobNumber = "T$nJobNumber" if (!$bProduction);
+print "For build key $sJobNumberKey got assigned number \"$nJobNumber\"\n";
 
 # check that $sLETTERS_FILE exists, otherwise create it
 if (!-f "$sWORKING_DRIVE\\$sLETTERS_FILE")
@@ -234,6 +235,21 @@ system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.nu
 release_drive_letter($sDriveLetter);
 system("subst $sDriveLetter: /d"); # this is not required, but it's a good idea to keep things in order
 print "drive letter $sDriveLetter released (and drive unsubsted)\n";
+
+if ($bHudson)
+{
+	print "cleaning job directories...\n";
+	if (-d "$sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel") # project dir
+	{
+		print "rmdir /S $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel\n";
+		system("rmdir /S /Q $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
+	}
+	if (-d "$sWORKING_DRIVE\\fbf_job\\$sJobNumberKey.$nJobNumber") # build drive
+	{
+		print "rmdir /S $sWORKING_DRIVE\\fbf_job\\$sJobNumberKey.$nJobNumber\n";
+		system("rmdir /S /Q $sWORKING_DRIVE\\fbf_job\\$sJobNumberKey.$nJobNumber");
+	}
+}
 
 sub mkdir_unique
 {
