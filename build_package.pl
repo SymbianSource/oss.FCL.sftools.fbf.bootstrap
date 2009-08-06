@@ -26,12 +26,12 @@ my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
 my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
-my $sFbfProjectRepo = "\\\\bishare\\mercurial_internal\\fbf\\projects\\packages";
+my $sFbfProjectRepo = "\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\projects\\packages";
 my $sFbfProjectDir = '';
 my $sSubProject = '';
 #my $sSourcesFile = '';
 #my $sModelFile = '';
-my $sFbfConfigRepo="\\\\bishare\\mercurial_internal\\fbf\\configs\\pkgbuild";
+my $sFbfConfigRepo="\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
 my $bProduction = 0;
@@ -53,9 +53,10 @@ GetOptions((
 	'publish!' => \$bPublish
 ));
 
-if (!$sSubProject)
+if (!($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 {
 	print "Usage: build_package.pl --subproj=RELPATH [OPTIONS]\n";
+	print "       build_package.pl --projectrepo=REPO [OPTIONS]\n";
 	print "where OPTIONS are:\n";
 	print "\t--subproj=RELPATH Select subproject located at RELPATH (relative to the root of the project repository)\n";
 	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project (instead of \\\\bishare\\mercurial_internal\\fbf\\projects\\packages)\n";
@@ -72,7 +73,7 @@ if (!$sSubProject)
 	exit(0);
 }
 
-if ($sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
+if ($sSubProject and $sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
 {
 	print "ERROR: Option --subproj must be in the format codeline/layer/package (e.g. MCL/os/boardsupport)\n";
 	exit(0);
