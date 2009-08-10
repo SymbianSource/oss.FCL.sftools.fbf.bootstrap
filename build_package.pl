@@ -168,8 +168,17 @@ $sConfigArg = "-Dsf.config.dir=$sFbfConfigDir" if ($sFbfConfigDir);
 my $sProjectArg = "-Dsf.project.repo=$sFbfProjectRepo";
 $sProjectArg .= " -Dsf.project.rev=$sFbfProjectRev" if ($sFbfProjectRev);
 $sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
-print("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir\n");
-system("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir >console_bootstrap_$$.txt 2>&1");
+my $sBootstrapCmd = "hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir";
+print("$sBootstrapCmd\n");
+open(LOG, ">console_bootstrap_$$.txt")
+open(PIPE, "$sBootstrapCmd 2>&1 |");
+while(<PIPE>)
+{
+	print LOG $_;
+	print $_;
+}
+close(PIPE);
+close(LOG);
 
 # check that $sNUMBERS_FILE exists, otherwise create it
 if (!-f $sNUMBERS_FILE)
@@ -230,12 +239,30 @@ $sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-print("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
-system("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg >console_sfprep_$$.txt 2>&1");
+my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
+print("$sPreparationCmd\n");
+open(LOG, ">console_sfprep_$$.txt")
+open(PIPE, "$sPreparationCmd 2>&1 |");
+while(<PIPE>)
+{
+	print LOG $_;
+	print $_;
+}
+close(PIPE);
+close(LOG);
 
 print "###### EXECUTE BUILD ######\n";
-print("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
-system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg >console_sfbuildall_$$.txt 2>&1");
+my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
+print("$sBuildallCmd\n");
+open(LOG, ">console_sfbuildall_$$.txt")
+open(PIPE, "$sBuildallCmd 2>&1 |");
+while(<PIPE>)
+{
+	print LOG $_;
+	print $_;
+}
+close(PIPE);
+close(LOG);
 
 # copy console outputs to remote log archive
 if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
