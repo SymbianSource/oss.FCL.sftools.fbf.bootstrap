@@ -22,6 +22,7 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
+my $sREMOTE_LOG_ARCHIVE="\\\\bishare\SF_builds";
 my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
 my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
@@ -168,7 +169,7 @@ my $sProjectArg = "-Dsf.project.repo=$sFbfProjectRepo";
 $sProjectArg .= " -Dsf.project.rev=$sFbfProjectRev" if ($sFbfProjectRev);
 $sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
 print("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir\n");
-system("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir");
+system("hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir >console_bootstrap_$$.txt 2>&1");
 
 # check that $sNUMBERS_FILE exists, otherwise create it
 if (!-f $sNUMBERS_FILE)
@@ -179,6 +180,8 @@ if (!-f $sNUMBERS_FILE)
 }
 
 my $sJobNumberKey = '';
+my $sPackage = '';
+my $sPlatform = '';
 my $nUnformattedNumber = 0;
 if ($nCmdLineNumber)
 {
@@ -190,6 +193,8 @@ elsif ($sFbfProjectRepo)
 	{
 		# key = <package>_<codeline>, e.g. for subproj=MCL/os/boardsupport -> key=boardsupport_MCL
 		$sSubProject =~ m,^([^/]+)/[^/]+/([^/]+)$,;
+		$sPackage = $2;
+		$sPlatform = $1;
 		$sJobNumberKey = "$2_$1";
 	}
 	else
@@ -226,11 +231,22 @@ print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
 print("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
-system("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg");
+system("hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg >console_sfprep_$$.txt 2>&1");
 
 print "###### EXECUTE BUILD ######\n";
 print("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg\n");
-system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg");
+system("hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg >console_sfbuildall_$$.txt 2>&1");
+
+# copy console outputs to remote log archive
+if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
+{
+	my $sTgtDir = "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs\\console";
+	system("mkdir $sTgtDir");
+	system("copy /Y $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt $sTgtDir");
+	system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
+	system("copy $sJobDir\\sf-config\\console_sfprep_$$.txt $sTgtDir");
+	system("copy $sJobDir\\sf-config\\console_sfbuildall_$$.txt $sTgtDir");
+}
 
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
@@ -248,12 +264,10 @@ if ($bHudson)
 		print "rmdir /S $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel\n";
 		system("rmdir /S /Q $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
 	}
-	my $sBuildLabel = $sJobNumberKey;
-	$sBuildLabel =~ s/\.T$//;
-	if (-d "$sWORKING_DRIVE\\fbf_job\\$sBuildLabel.$nJobNumber") # build drive
+	if (-d "$sWORKING_DRIVE\\fbf_job\\$sPackage\_$sPlatform.$nJobNumber") # build drive
 	{
-		print "rmdir /S $sWORKING_DRIVE\\fbf_job\\$sBuildLabel.$nJobNumber\n";
-		system("rmdir /S /Q $sWORKING_DRIVE\\fbf_job\\$sBuildLabel.$nJobNumber");
+		print "rmdir /S $sWORKING_DRIVE\\fbf_job\\$sPackage\_$sPlatform.$nJobNumber\n";
+		system("rmdir /S /Q $sWORKING_DRIVE\\fbf_job\\$sPackage\_$sPlatform.$nJobNumber");
 	}
 }
 
