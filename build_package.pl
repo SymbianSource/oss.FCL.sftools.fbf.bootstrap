@@ -170,7 +170,7 @@ $sProjectArg .= " -Dsf.project.rev=$sFbfProjectRev" if ($sFbfProjectRev);
 $sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
 my $sBootstrapCmd = "hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir";
 print("$sBootstrapCmd\n");
-open(LOG, ">console_bootstrap_$$.txt")
+open(LOG, ">console_bootstrap_$$.txt");
 open(PIPE, "$sBootstrapCmd 2>&1 |");
 while(<PIPE>)
 {
@@ -241,7 +241,7 @@ chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
 my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
 print("$sPreparationCmd\n");
-open(LOG, ">console_sfprep_$$.txt")
+open(LOG, ">console_sfprep_$$.txt");
 open(PIPE, "$sPreparationCmd 2>&1 |");
 while(<PIPE>)
 {
@@ -254,7 +254,7 @@ close(LOG);
 print "###### EXECUTE BUILD ######\n";
 my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
 print("$sBuildallCmd\n");
-open(LOG, ">console_sfbuildall_$$.txt")
+open(LOG, ">console_sfbuildall_$$.txt");
 open(PIPE, "$sBuildallCmd 2>&1 |");
 while(<PIPE>)
 {
