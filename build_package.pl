@@ -269,8 +269,8 @@ close(LOG);
 # copy console outputs to remote log archive
 if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
 {
-	print "copying console output files to $sTgtDir\n";
 	my $sTgtDir = "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs\\console";
+	print "copying console output files to $sTgtDir\n";
 	system("mkdir $sTgtDir");
 	system("copy /Y $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt $sTgtDir");
 	system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
