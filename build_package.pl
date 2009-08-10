@@ -39,6 +39,7 @@ my $bProduction = 0;
 my $sDiamondsTag = '';
 my $bHudson = 0;
 my $bPublish = 1;
+my $bHelp = 0;
 GetOptions((
 	'configrepo=s' => \$sFbfConfigRepo,
 	'configdir=s' => \$sFbfConfigDir,
@@ -51,10 +52,11 @@ GetOptions((
 	'production!' => \$bProduction,
 	'tag=s' => \$sDiamondsTag,
 	'hudson!' => \$bHudson,
-	'publish!' => \$bPublish
+	'publish!' => \$bPublish,
+	'help!' => \$bHelp
 ));
 
-if (!($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
+if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 {
 	print "Usage: build_package.pl --subproj=RELPATH [OPTIONS]\n";
 	print "       build_package.pl --projectrepo=REPO [OPTIONS]\n";
