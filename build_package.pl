@@ -22,7 +22,7 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sREMOTE_LOG_ARCHIVE="\\\\bishare\SF_builds";
+my $sREMOTE_LOG_ARCHIVE="\\\\bishare\\SF_builds";
 my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
 my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
@@ -269,12 +269,17 @@ close(LOG);
 # copy console outputs to remote log archive
 if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
 {
+	print "copying console output files to $sTgtDir\n";
 	my $sTgtDir = "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs\\console";
 	system("mkdir $sTgtDir");
 	system("copy /Y $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt $sTgtDir");
 	system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
 	system("copy $sJobDir\\sf-config\\console_sfprep_$$.txt $sTgtDir");
 	system("copy $sJobDir\\sf-config\\console_sfbuildall_$$.txt $sTgtDir");
+}
+else
+{
+	print "directory $sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs doesn't exist.\n";
 }
 
 print("cd $sBOOTSTRAP_DIR\n");
