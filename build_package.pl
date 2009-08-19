@@ -266,6 +266,19 @@ while(<PIPE>)
 close(PIPE);
 close(LOG);
 
+print "###### GENERATE BUILD SUMMARY ######\n";
+my $sSummaryCmd = "hlm sf-summary -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
+print("$sSummaryCmd\n");
+open(LOG, ">console_sfsummary_$$.txt");
+open(PIPE, "$sSummaryCmd 2>&1 |");
+while(<PIPE>)
+{
+	print LOG $_;
+	print $_;
+}
+close(PIPE);
+close(LOG);
+
 # copy console outputs to remote log archive
 if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
 {
@@ -276,6 +289,7 @@ if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatfo
 	system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
 	system("copy $sJobDir\\sf-config\\console_sfprep_$$.txt $sTgtDir");
 	system("copy $sJobDir\\sf-config\\console_sfbuildall_$$.txt $sTgtDir");
+	system("copy $sJobDir\\sf-config\\console_sfsummary_$$.txt $sTgtDir");
 }
 else
 {
