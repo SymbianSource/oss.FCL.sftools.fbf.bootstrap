@@ -72,7 +72,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
 	print "\t--tag=TAG Apply Diamonds tag TAG to this build (exclusive with --production)\n";
 	print "\t--hudson Checks that there is at least NUMBER_OF_PROCESSORS X 10 GB available on the working drive\n";
-	print "\t--nopublish Use numbers_test.txt for numbers and disable publishing\n";
+	print "\t--nopublish Use \\numbers_test.txt for numbers and disable publishing\n";
 	exit(0);
 }
 
@@ -94,9 +94,7 @@ if ($bProduction and $sDiamondsTag)
 #	exit(0);
 #}
 
-my $sWORKING_DRIVE = "G:";
-my $output = `G: 2>&1`;
-$sWORKING_DRIVE = "D:" if ($output =~ /The device is not ready./);
+my $sWORKING_DRIVE = find_working_drive();
 print "Will use drive $sWORKING_DRIVE as working drive for this build\n";
 
 if ($bHudson)
@@ -132,7 +130,7 @@ $sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=production" if ( $bProduction )
 $sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=$sDiamondsTag" if ( $sDiamondsTag );
 my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
-$sNUMBERS_FILE = "d:\\numbers_test.txt" if ( !$bPublish );
+$sNUMBERS_FILE = "$sWORKING_DRIVE\\numbers_test.txt" if ( !$bPublish );
 
 my $sJobLabel = 'job';
 if ($sSubProject)
@@ -279,21 +277,24 @@ while(<PIPE>)
 close(PIPE);
 close(LOG);
 
-# copy console outputs to remote log archive
-if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
+if ($bPublish)
 {
-	my $sTgtDir = "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs\\console";
-	print "copying console output files to $sTgtDir\n";
-	system("mkdir $sTgtDir");
-	system("copy /Y $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt $sTgtDir");
-	system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
-	system("copy $sJobDir\\sf-config\\console_sfprep_$$.txt $sTgtDir");
-	system("copy $sJobDir\\sf-config\\console_sfbuildall_$$.txt $sTgtDir");
-	system("copy $sJobDir\\sf-config\\console_sfsummary_$$.txt $sTgtDir");
-}
-else
-{
-	print "directory $sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs doesn't exist.\n";
+	# copy console outputs to remote log archive
+	if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
+	{
+		my $sTgtDir = "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs\\console";
+		print "copying console output files to $sTgtDir\n";
+		system("mkdir $sTgtDir");
+		system("copy /Y $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt $sTgtDir");
+		system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
+		system("copy $sJobDir\\sf-config\\console_sfprep_$$.txt $sTgtDir");
+		system("copy $sJobDir\\sf-config\\console_sfbuildall_$$.txt $sTgtDir");
+		system("copy $sJobDir\\sf-config\\console_sfsummary_$$.txt $sTgtDir");
+	}
+	else
+	{
+		print "directory $sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs doesn't exist.\n";
+	}
 }
 
 print("cd $sBOOTSTRAP_DIR\n");
@@ -317,6 +318,18 @@ if ($bHudson)
 		print "rmdir /S $sWORKING_DRIVE\\fbf_job\\$sPackage\_$sPlatform.$nJobNumber\n";
 		system("rmdir /S /Q $sWORKING_DRIVE\\fbf_job\\$sPackage\_$sPlatform.$nJobNumber");
 	}
+}
+
+sub find_working_drive
+{
+	my @drive_list = ('E', 'G', 'D', 'C');
+	
+	for my $drive (@drive_list)
+	{
+		return "$drive:" if (-d "$drive:/");
+	}
+	
+	die "Could not find suitable working drive.";
 }
 
 sub mkdir_unique
