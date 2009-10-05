@@ -32,7 +32,7 @@ my $sFbfProjectDir = '';
 my $sSubProject = '';
 #my $sSourcesFile = '';
 #my $sModelFile = '';
-my $sFbfConfigRepo="\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\pkgbuild";
+my $sFbfConfigRepo="\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\default";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
 my $bProduction = 0;
@@ -66,7 +66,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo).\n";
 	#print "\t--sources=FILE ...\n";
 	#print "\t--model=FILE ...\n";
-	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\pkgbuild)\n";
+	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\default)\n";
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
