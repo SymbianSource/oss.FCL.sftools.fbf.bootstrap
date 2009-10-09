@@ -39,6 +39,7 @@ my $bProduction = 0;
 my $sDiamondsTag = '';
 my $bHudson = 0;
 my $bPublish = 1;
+my %hHlmDefines = ();
 my $bHelp = 0;
 GetOptions((
 	'configrepo=s' => \$sFbfConfigRepo,
@@ -53,6 +54,7 @@ GetOptions((
 	'tag=s' => \$sDiamondsTag,
 	'hudson!' => \$bHudson,
 	'publish!' => \$bPublish,
+	'define=s' => \%hHlmDefines,
 	'help!' => \$bHelp
 ));
 
@@ -73,6 +75,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--tag=TAG Apply Diamonds tag TAG to this build (exclusive with --production)\n";
 	print "\t--hudson Checks that there is at least NUMBER_OF_PROCESSORS X 10 GB available on the working drive\n";
 	print "\t--nopublish Use \\numbers_test.txt for numbers and disable publishing\n";
+	print "\t--define ATTRIBUTE=VALUE Pass -D statements to the Helium Framework\n";
 	exit(0);
 }
 
@@ -123,6 +126,12 @@ if ($sFbfConfigRepo =~ m,(.*)#(.*),)
 {
 	$sFbfConfigRepo = $1;
 	$sFbfConfigRev = $2;
+}
+
+my $sHlmDefineOpt = '';
+for (keys %hHlmDefines)
+{
+	$sHlmDefineOpt .= "-D$_=$hHlmDefines{$_} ";
 }
 
 my $sTestBuildOpt = "";
@@ -239,7 +248,7 @@ $sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
+my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
 print("$sPreparationCmd\n");
 open(LOG, ">console_sfprep_$$.txt");
 open(PIPE, "$sPreparationCmd 2>&1 |");
@@ -252,7 +261,7 @@ close(PIPE);
 close(LOG);
 
 print "###### EXECUTE BUILD ######\n";
-my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
+my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
 print("$sBuildallCmd\n");
 open(LOG, ">console_sfbuildall_$$.txt");
 open(PIPE, "$sBuildallCmd 2>&1 |");
@@ -265,7 +274,7 @@ close(PIPE);
 close(LOG);
 
 print "###### GENERATE BUILD SUMMARY ######\n";
-my $sSummaryCmd = "hlm sf-summary -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg";
+my $sSummaryCmd = "hlm sf-summary -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
 print("$sSummaryCmd\n");
 open(LOG, ">console_sfsummary_$$.txt");
 open(PIPE, "$sSummaryCmd 2>&1 |");
