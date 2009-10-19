@@ -125,7 +125,7 @@ for (keys %hHlmDefines)
 }
 
 my $sTestBuildOpt = "";
-$sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=$sDiamondsTag" if ( $sDiamondsTag );
+$sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=\"$sDiamondsTag\"" if ( $sDiamondsTag );
 my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
 $sNUMBERS_FILE = "$sWORKING_DRIVE\\numbers_test.txt" if ( !$bPublish );
