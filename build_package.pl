@@ -22,7 +22,6 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sREMOTE_LOG_ARCHIVE="\\\\bishare\\SF_builds";
 my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
 my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
@@ -179,15 +178,7 @@ $sProjectArg .= " -Dsf.project.rev=$sFbfProjectRev" if ($sFbfProjectRev);
 $sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
 my $sBootstrapCmd = "hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir";
 print("$sBootstrapCmd\n");
-open(LOG, ">console_bootstrap_$$.txt");
-open(PIPE, "$sBootstrapCmd 2>&1 |");
-while(<PIPE>)
-{
-	print LOG $_;
-	print $_;
-}
-close(PIPE);
-close(LOG);
+system($sBootstrapCmd);
 
 # check that $sNUMBERS_FILE exists, otherwise create it
 if (!-f $sNUMBERS_FILE)
@@ -250,61 +241,12 @@ chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
 my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
 print("$sPreparationCmd\n");
-open(LOG, ">console_sfprep_$$.txt");
-open(PIPE, "$sPreparationCmd 2>&1 |");
-while(<PIPE>)
-{
-	print LOG $_;
-	print $_;
-}
-close(PIPE);
-close(LOG);
+system($sPreparationCmd);
 
 print "###### EXECUTE BUILD ######\n";
 my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
 print("$sBuildallCmd\n");
-open(LOG, ">console_sfbuildall_$$.txt");
-open(PIPE, "$sBuildallCmd 2>&1 |");
-while(<PIPE>)
-{
-	print LOG $_;
-	print $_;
-}
-close(PIPE);
-close(LOG);
-
-print "###### GENERATE BUILD SUMMARY ######\n";
-my $sSummaryCmd = "hlm sf-summary -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
-print("$sSummaryCmd\n");
-open(LOG, ">console_sfsummary_$$.txt");
-open(PIPE, "$sSummaryCmd 2>&1 |");
-while(<PIPE>)
-{
-	print LOG $_;
-	print $_;
-}
-close(PIPE);
-close(LOG);
-
-if ($bPublish)
-{
-	# copy console outputs to remote log archive
-	if (-d "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs")
-	{
-		my $sTgtDir = "$sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs\\console";
-		print "copying console output files to $sTgtDir\n";
-		system("mkdir $sTgtDir");
-		system("copy /Y $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt $sTgtDir");
-		system("del $sBOOTSTRAP_DIR\\console_bootstrap_$$.txt");
-		system("copy $sJobDir\\sf-config\\console_sfprep_$$.txt $sTgtDir");
-		system("copy $sJobDir\\sf-config\\console_sfbuildall_$$.txt $sTgtDir");
-		system("copy $sJobDir\\sf-config\\console_sfsummary_$$.txt $sTgtDir");
-	}
-	else
-	{
-		print "directory $sREMOTE_LOG_ARCHIVE\\$sPackage\\builds\\$sPlatform\\$sPackage\_$sPlatform.$nJobNumber\\logs doesn't exist.\n";
-	}
-}
+system($sBuildallCmd);
 
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
