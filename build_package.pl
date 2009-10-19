@@ -34,7 +34,6 @@ my $sSubProject = '';
 my $sFbfConfigRepo="\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\default";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
-my $bProduction = 0;
 my $sDiamondsTag = '';
 my $bHudson = 0;
 my $bPublish = 1;
@@ -49,7 +48,6 @@ GetOptions((
 	#'sources=s' => \$sSourcesFile,
 	#'model=s' => \$sModelFile,
 	'number=s' => \$nCmdLineNumber,
-	'production!' => \$bProduction,
 	'tag=s' => \$sDiamondsTag,
 	'hudson!' => \$bHudson,
 	'publish!' => \$bPublish,
@@ -70,8 +68,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\default)\n";
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
-	print "\t--production Tag this build as 'production' (default: 'test') and use nnn numbering (default: Tnnn)\n";
-	print "\t--tag=TAG Apply Diamonds tag TAG to this build (exclusive with --production)\n";
+	print "\t--tag=TAG Apply Diamonds tag TAG to this build\n";
 	print "\t--hudson Checks that there is at least NUMBER_OF_PROCESSORS X 10 GB available on the working drive\n";
 	print "\t--nopublish Use \\numbers_test.txt for numbers and disable publishing\n";
 	print "\t--define ATTRIBUTE=VALUE Pass -D statements to the Helium Framework\n";
@@ -81,12 +78,6 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 if ($sSubProject and $sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
 {
 	print "ERROR: Option --subproj must be in the format codeline/layer/package (e.g. MCL/os/boardsupport)\n";
-	exit(0);
-}
-
-if ($bProduction and $sDiamondsTag)
-{
-	print "ERROR: Options --production and --tag are mutually exclusive.\n";
 	exit(0);
 }
 
@@ -134,7 +125,6 @@ for (keys %hHlmDefines)
 }
 
 my $sTestBuildOpt = "";
-$sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=production" if ( $bProduction );
 $sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=$sDiamondsTag" if ( $sDiamondsTag );
 my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
@@ -212,11 +202,9 @@ elsif ($sFbfProjectRepo)
 		my $sRevZeroHash = get_rev_zero_hash($sFbfProjectRepo);
 		$sJobNumberKey = $sRevZeroHash;
 	}
-	$sJobNumberKey .= ".T" if (!$bProduction);
 	$nUnformattedNumber = get_job_number($sJobNumberKey);
 }
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
-$nJobNumber = "T$nJobNumber" if (!$bProduction);
 print "For build key $sJobNumberKey got assigned number \"$nJobNumber\"\n";
 
 # check that $sLETTERS_FILE exists, otherwise create it
