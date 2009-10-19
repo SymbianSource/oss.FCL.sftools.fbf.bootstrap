@@ -22,7 +22,7 @@ my $sBOOTSTRAP_DIR="C:\\Apps\\FBF\\bootstrap";
 my $sJOB_BASE_DIR="fbf_project";
 my $nMAX_JOBDIR_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 my $nLOCK_FILE_MAX_ATTEMPTS = 5;
-my $sNUMBERS_FILE="\\\\bishare\\SF_builds\\numbers2.txt";
+my $sNUMBERS_FILE="\\\\v800020\\Publish\\SF_builds\\numbers.txt";
 my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
