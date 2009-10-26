@@ -231,7 +231,7 @@ $sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
 my $sVariantArg = '';
 $sVariantArg = "-Dsf.spec.sourcesync.sourcespecfile=sources_$sSubprojVariant.csv" if ($sSubprojVariant);
 my $sRVCT4Arg = '';
-$sRVCT4Arg = "-Dsf.spec.sbs.config=tools2_rel.whatlog,tools2_rel.whatlog.rvct4,winscw.whatlog,winscw.whatlog.rvct4,armv5.whatlog,armv5.whatlog.rvct4" if ($bRVCT4);
+$sRVCT4Arg = "-Dsf.spec.sbs.config=\"tools2_rel.whatlog,tools2_rel.whatlog.rvct4,winscw.whatlog,winscw.whatlog.rvct4,armv5.whatlog,armv5.whatlog.rvct4\"" if ($bRVCT4);
 my $sAllTags = '';
 $sAllTags = $sDiamondsTag if ($sDiamondsTag);
 $sAllTags .= ',' if ($sAllTags and $sSubprojVariant);
