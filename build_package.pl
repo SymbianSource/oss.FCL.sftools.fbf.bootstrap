@@ -29,6 +29,8 @@ my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the let
 my $sFbfProjectRepo = "\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\projects\\packages";
 my $sFbfProjectDir = '';
 my $sSubProject = '';
+my $sSubprojVariant = '';
+my $bRVCT4 = 0;
 #my $sSourcesFile = '';
 #my $sModelFile = '';
 my $sFbfConfigRepo="\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\default";
@@ -45,6 +47,8 @@ GetOptions((
 	'projectrepo=s' => \$sFbfProjectRepo,
 	'projectdir=s' => \$sFbfProjectDir,
 	'subproj=s' => \$sSubProject,
+	'variant=s' => \$sSubprojVariant,
+	'rvct4!' => \$bRVCT4,
 	#'sources=s' => \$sSourcesFile,
 	#'model=s' => \$sModelFile,
 	'number=s' => \$nCmdLineNumber,
@@ -61,6 +65,8 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "       build_package.pl --projectrepo=REPO [OPTIONS]\n";
 	print "where OPTIONS are:\n";
 	print "\t--subproj=RELPATH Select subproject located at RELPATH (relative to the root of the project repository)\n";
+	print "\t--variant=VARIANT If specified use sources_VARIANT.csv instead of sources.csv and add \"VARIANT\" as tag for this build\n";
+	print "\t--rvct4 Enable build with RVCT4 on top of the other targets\n";
 	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project (instead of \\\\bishare\\mercurial_internal\\fbf\\projects\\packages)\n";
 	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo).\n";
 	#print "\t--sources=FILE ...\n";
@@ -124,8 +130,6 @@ for (keys %hHlmDefines)
 	$sHlmDefineOpt .= "-D$_=$hHlmDefines{$_} ";
 }
 
-my $sTestBuildOpt = "";
-$sTestBuildOpt = "-Dsf.spec.publish.diamonds.tag=\"$sDiamondsTag\"" if ( $sDiamondsTag );
 my $sNoPublishOpt = "";
 $sNoPublishOpt = "-Dsf.spec.publish.enable=false" if ( !$bPublish );
 $sNUMBERS_FILE = "$sWORKING_DRIVE\\numbers_test.txt" if ( !$bPublish );
@@ -224,15 +228,25 @@ my $sJobRootDirArg = "-Dsf.spec.job.rootdir=$sWORKING_DRIVE\\fbf_job";
 
 my $sSubProjArg = '';
 $sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
+my $sVariantArg = '';
+$sVariantArg = "-Dsf.spec.sourcesync.sourcespecfile=sources_$sSubprojVariant.csv" if ($sSubprojVariant);
+my $sRVCT4Arg = '';
+$sRVCT4Arg = "-Dsf.spec.sbs.config=tools2_rel.whatlog,tools2_rel.whatlog.rvct4,winscw.whatlog,winscw.whatlog.rvct4,armv5.whatlog,armv5.whatlog.rvct4" if ($bRVCT4);
+my $sAllTags = '';
+$sAllTags = $sDiamondsTag if ($sDiamondsTag);
+$sAllTags .= ',' if ($sAllTags and $sSubprojVariant);
+$sAllTags .= $sSubprojVariant if ($sSubprojVariant);
+my $sTagsArg = "";
+$sTagsArg = "-Dsf.spec.publish.diamonds.tag=\"$sAllTags\"" if ($sAllTags);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
+my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sRVCT4Arg";
 print("$sPreparationCmd\n");
 system($sPreparationCmd);
 
 print "###### EXECUTE BUILD ######\n";
-my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTestBuildOpt $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt";
+my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sRVCT4Arg";
 print("$sBuildallCmd\n");
 system($sBuildallCmd);
 
