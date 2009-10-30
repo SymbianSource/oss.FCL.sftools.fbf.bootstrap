@@ -40,6 +40,7 @@ my $sDiamondsTag = '';
 my $bHudson = 0;
 my $bPublish = 1;
 my %hHlmDefines = ();
+my $bDisableAntiVirus = 0;
 my $bHelp = 0;
 GetOptions((
 	'configrepo=s' => \$sFbfConfigRepo,
@@ -56,6 +57,7 @@ GetOptions((
 	'hudson!' => \$bHudson,
 	'publish!' => \$bPublish,
 	'define=s' => \%hHlmDefines,
+	'disableav=s' => \$bDisableAntiVirus,
 	'help!' => \$bHelp
 ));
 
@@ -78,6 +80,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--hudson Checks that there is at least NUMBER_OF_PROCESSORS X 10 GB available on the working drive\n";
 	print "\t--nopublish Use \\numbers_test.txt for numbers and disable publishing\n";
 	print "\t--define ATTRIBUTE=VALUE Pass -D statements to the Helium Framework\n";
+	print "\t--disableav Disable Anti-Virus for the duration of the build (also sync with other concurrent package builds)\n";
 	exit(0);
 }
 
@@ -221,8 +224,19 @@ if (!-f "$sWORKING_DRIVE\\$sLETTERS_FILE")
 
 # acquire drive letter
 my $sDriveLetter = acquire_drive_letter();
+die "Could not acquire drive letter" if (!$sDriveLetter);
 print "acquired drive letter: $sDriveLetter\n";
-die "Could not acquire drive letter" if (! $sDriveLetter);
+
+# disable antivirus:
+# done after the acquisition of the drive letter as letter file
+# is used as a means to sync with concurrent package builds
+if ($bDisableAntiVirus)
+{
+	print "disabling anti-virus\n";
+	my $disableav_cmd = "av.bat /stop";
+	print "$disableav_cmd\n";
+	system($disableav_cmd);
+}
 
 my $sJobRootDirArg = "-Dsf.spec.job.rootdir=$sWORKING_DRIVE\\fbf_job";
 
@@ -253,8 +267,8 @@ system($sBuildallCmd);
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
 
-# release the drive letter
-release_drive_letter($sDriveLetter);
+# release the drive letter and optionally re-enable the AV
+release_drive_letter_and_reenable_av($sDriveLetter);
 system("subst $sDriveLetter: /d"); # this is not required, but it's a good idea to keep things in order
 print "drive letter $sDriveLetter released (and drive unsubsted)\n";
 
@@ -437,7 +451,7 @@ sub acquire_drive_letter
 	return $sLetterToRelease;
 }
 
-sub release_drive_letter
+sub release_drive_letter_and_reenable_av
 {
 	my ($sLetterToRelease) = @_;
 	
@@ -459,6 +473,19 @@ sub release_drive_letter
 			delete $hsPidsAndTimestamps{$sLetterToRelease};
 			
 			seek(FILE, 0, 0);
+			
+			# if there are no other builds at this time then enable back the antivirus
+			my $nConcurrentBuilds = scalar(keys(%hsPidsAndTimestamps));
+			if ($nConcurrentBuilds == 0)
+			{
+				if ($bDisableAntiVirus)
+				{
+					print "enabling anti-virus\n";
+					my $enableav_cmd = "av.bat /start";
+					print "$enableav_cmd\n";
+					system($enableav_cmd);
+				}
+			}
 
 			for my $sLetter ( keys(%hsPidsAndTimestamps) )
 			{
