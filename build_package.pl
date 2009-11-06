@@ -49,7 +49,7 @@ GetOptions((
 	'projectdir=s' => \$sFbfProjectDir,
 	'subproj=s' => \$sSubProject,
 	'variant=s' => \$sSubprojVariant,
-	'sbsconfig!' => \$sSBSConfig,
+	'sbsconfig=s' => \$sSBSConfig,
 	#'sources=s' => \$sSourcesFile,
 	#'model=s' => \$sModelFile,
 	'number=s' => \$nCmdLineNumber,
