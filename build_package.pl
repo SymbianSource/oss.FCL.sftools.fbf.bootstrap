@@ -405,7 +405,7 @@ sub acquire_drive_letter
 					my $nPid=$1;
 					my $nTimestamp=$2;
 					
-					if (time()-$nTimestamp<=$nMAX_LETTER_AGE_SECONDS)
+					if (time()-$nTimestamp<=$nMAX_LETTER_AGE_SECONDS or $nTimestamp == 0 or $nTimestamp == -1)
 					{
 						$hsPidsAndTimestamps{$sLetter} = $sString;
 					}
