@@ -90,21 +90,6 @@ if ($sSubProject and $sSubProject !~ m,^([^/]+)/([^/]+)$,)
 my $sWORKING_DRIVE = find_working_drive();
 print "Will use drive $sWORKING_DRIVE as working drive for this build\n";
 
-if ($bHudson)
-{
-	my $nProcessors = $ENV{'NUMBER_OF_PROCESSORS'};
-	my $diroutput = `dir /-C $sWORKING_DRIVE`;
-	my $nBytesFree = 0;
-	$nBytesFree = $1 if ($diroutput =~ /(\d+) bytes free/);
-	my $nNeededSpace = 10*$nProcessors*1073741824;
-	#print "Needed space is $nNeededSpace\n";
-	if ($nBytesFree < $nNeededSpace)
-	{
-		print "ERROR: Available disk space on working drive ($nBytesFree bytes) is not enough to run a package build with Hudson.\n";
-		exit(1);
-	}
-}
-
 my $sFbfProjectRev = '';
 if ($sFbfProjectRepo =~ m,(.*)#(.*),)
 {
