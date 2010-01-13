@@ -14,19 +14,26 @@
   <!-- config -->
   <property name="sf.config.repo" value="${sf.config.repository}"/> <!-- old name -->
   <property name="sf.config.rev" value="tip"/>
-  <echo message="config: repo=${sf.config.repo} rev=${sf.config.rev}"/>
+  <property name="sf.config.dir" value=""/>
   
   <!-- project -->
   <property name="sf.project.repo" value="${platform.config.repository}"/> <!-- old name -->
   <property name="sf.project.rev" value="tip"/>
-  <echo message="project: repo=${sf.project.repo} rev=${sf.project.rev}"/>
+  <property name="sf.project.dir" value=""/>
 
-  <target name="bootstrap" depends="init,get-sf-config,get-sf-project" />
+  <target name="bootstrap" depends="init,get-sf-config,get-sf-project" description="Target for executing the bootstrap">
+    <stopwatch name="bootstrap" action="elapsed"/>
+  </target>
 
   <target name="init">
+    <stopwatch name="bootstrap"/>
+
     <mkdir dir="${sf.target.dir}" />
     <mkdir dir="${sf.target.dir}/build" />
     <mkdir dir="${sf.target.dir}/build/config" />
+
+    <echo message="config: repo=${sf.config.repo} rev=${sf.config.rev}"/>
+    <echo message="project: repo=${sf.project.repo} rev=${sf.project.rev}"/>
   </target>
     
   <target name="clean-env">
@@ -35,46 +42,65 @@
   </target>
 
   <target name="get-sf-config">
-    <if>
-      <isset property="sf.config.dir"/>
-      <then>
-        <echo message="Getting FBF configuration from dir ${sf.config.dir}"/>
-        <copy todir="${sf.target.dir}/sf-config">
-          <fileset dir="${sf.config.dir}"/>
-        </copy>
-      </then>
-      <else>
-        <echo message="Getting FBF configuration from repository ${sf.config.repo}"/>
-        <hlm:scm verbose="true" scmUrl="scm:hg:${sf.config.repo}">
-          <hlm:checkout basedir="${sf.target.dir}/sf-config"/>
-          <hlm:update basedir="${sf.target.dir}/sf-config">
-            <hlm:tag name="${sf.config.rev}"/>
-          </hlm:update>
-        </hlm:scm>
-      </else>
-    </if>
+    <antcall target="get-repo">
+      <param name="stopwatch.name" value="get-sf-config"/>
+      <param name="subdir.name" value="sf-config"/>
+      <param name="repo.dir" value="${sf.config.dir}"/>
+      <param name="repo.url" value="${sf.config.repo}"/>
+      <param name="repo.rev" value="${sf.config.rev}"/>
+    </antcall>
   </target>
 
   <target name="get-sf-project">
+    <antcall target="get-repo">
+      <param name="stopwatch.name" value="get-sf-project"/>
+      <param name="subdir.name" value="build/config"/>
+      <param name="repo.dir" value="${sf.project.dir}"/>
+      <param name="repo.url" value="${sf.project.repo}"/>
+      <param name="repo.rev" value="${sf.project.rev}"/>
+    </antcall>
+  </target>
+
+  <target name="get-repo">
+    <stopwatch name="${stopwatch.name}"/>
     <if>
-      <isset property="sf.project.dir"/>
+      <not>
+        <equals arg1="${repo.dir}" arg2=""/>
+      </not>
       <then>
-        <echo message="Getting FBF project from dir ${sf.project.dir}"/>
-        <copy todir="${sf.target.dir}/build/config">
-          <fileset dir="${sf.project.dir}"/>
+        <echo message="Getting FBF configuration from dir ${repo.dir}"/>
+        <copy todir="${sf.target.dir}/${subdir.name}">
+          <fileset dir="${repo.dir}"/>
         </copy>
       </then>
       <else>
-        <echo message="Getting FBF project from repository ${sf.project.repo}"/>
-        <hlm:scm verbose="true" scmUrl="scm:hg:${sf.project.repo}">
-          <hlm:checkout basedir="${sf.target.dir}/build/config"/>
-          <hlm:update basedir="${sf.target.dir}/build/config">
-            <hlm:tag name="${sf.project.rev}"/>
-          </hlm:update>
-        </hlm:scm>
+        <echo message="Getting ${repo.url}"/>
+        <if>
+          <available file="${sf.target.dir}/${subdir.name}/.hg" type="dir"/>
+          <then>
+            <echo message="Updating ${sf.target.dir}/${subdir.name}"/>
+            <exec executable="hg" dir="${sf.target.dir}/${subdir.name}">
+              <arg value="pull"/>
+              <arg value="${repo.url}"/>
+            </exec>
+            <exec executable="hg" dir="${sf.target.dir}/${subdir.name}">
+              <arg value="up"/>
+              <arg value="${repo.rev}"/>
+              <arg value="-C"/>
+            </exec>
+          </then>
+          <else>
+            <hlm:scm verbose="true" scmUrl="scm:hg:${repo.url}">
+              <hlm:checkout basedir="${sf.target.dir}/${subdir.name}"/>
+              <hlm:update basedir="${sf.target.dir}/${subdir.name}">
+                <hlm:tag name="${repo.rev}"/>
+              </hlm:update>
+            </hlm:scm>
+          </else>
+        </if>
       </else>
     </if>
+    <stopwatch name="${stopwatch.name}" action="elapsed"/>
   </target>
-
 
 </project>
