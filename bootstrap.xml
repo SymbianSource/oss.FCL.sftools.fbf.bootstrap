@@ -12,15 +12,33 @@
   <property name="sf.target.dir" value="${bootstrap.base.dir}"/>
   
   <!-- config -->
-  <property name="sf.config.repo" value="${sf.config.repository}"/> <!-- old name -->
+  <property name="sf.config.repo" value=""/>
   <property name="sf.config.rev" value="tip"/>
   <property name="sf.config.dir" value=""/>
-  
+
   <!-- project -->
-  <property name="sf.project.repo" value="${platform.config.repository}"/> <!-- old name -->
+  <property name="sf.project.repo" value=""/>
   <property name="sf.project.rev" value="tip"/>
   <property name="sf.project.dir" value=""/>
 
+  <!-- Sanity check the supplied properties -->
+  <fail message="Must specify property sf.config.repo or sf.config.dir">
+    <condition>
+      <and>
+        <equals arg1="${sf.config.repo}" arg2=""/>
+        <equals arg1="${sf.config.dir}" arg2=""/>
+      </and>
+    </condition>
+  </fail>
+  <fail message="Must specify property sf.project.repo or sf.project.dir">
+    <condition>
+      <and>
+        <equals arg1="${sf.project.repo}" arg2=""/>
+        <equals arg1="${sf.project.dir}" arg2=""/>
+      </and>
+    </condition>
+  </fail>
+  
   <target name="bootstrap" depends="init,get-sf-config,get-sf-project" description="Target for executing the bootstrap">
     <stopwatch name="bootstrap" action="elapsed"/>
   </target>
