@@ -13,12 +13,12 @@
   
   <!-- config -->
   <property name="sf.config.repo" value=""/>
-  <property name="sf.config.rev" value="tip"/>
+  <property name="sf.config.rev" value="default"/>
   <property name="sf.config.dir" value=""/>
 
   <!-- project -->
   <property name="sf.project.repo" value=""/>
-  <property name="sf.project.rev" value="tip"/>
+  <property name="sf.project.rev" value="default"/>
   <property name="sf.project.dir" value=""/>
 
   <!-- Sanity check the supplied properties -->
@@ -108,12 +108,13 @@
             </exec>
           </then>
           <else>
-            <hlm:scm verbose="true" scmUrl="scm:hg:${repo.url}">
-              <hlm:checkout basedir="${sf.target.dir}/${subdir.name}"/>
-              <hlm:update basedir="${sf.target.dir}/${subdir.name}">
-                <hlm:tag name="${repo.rev}"/>
-              </hlm:update>
-            </hlm:scm>
+            <echo message="Cloning ${repo.url}#${repo.rev} to ${sf.target.dir}/${subdir.name}"/>
+            <exec executable="hg" dir="${sf.target.dir}">
+              <arg value="clone"/>
+              <arg value="-r${repo.rev}"/>
+              <arg value="${repo.url}"/>
+              <arg value="${subdir.name}"/>
+            </exec>
           </else>
         </if>
       </else>
