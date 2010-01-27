@@ -57,7 +57,7 @@ GetOptions((
 	'hudson!' => \$bHudson,
 	'publish!' => \$bPublish,
 	'define=s' => \%hHlmDefines,
-	'disableav=s' => \$bDisableAntiVirus,
+	'disableav!' => \$bDisableAntiVirus,
 	'help!' => \$bHelp
 ));
 
