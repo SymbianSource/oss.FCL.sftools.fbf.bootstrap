@@ -48,7 +48,6 @@
 
     <mkdir dir="${sf.target.dir}" />
     <mkdir dir="${sf.target.dir}/build" />
-    <mkdir dir="${sf.target.dir}/build/config" />
 
     <echo message="config: repo=${sf.config.repo} rev=${sf.config.rev}"/>
     <echo message="project: repo=${sf.project.repo} rev=${sf.project.rev}"/>
