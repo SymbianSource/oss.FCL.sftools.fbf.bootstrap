@@ -26,14 +26,14 @@ my $sNUMBERS_FILE="\\\\v800020\\Publish\\SF_builds\\numbers.txt";
 my $sLETTERS_FILE="letters.txt";
 my $nMAX_LETTER_AGE_SECONDS = 86400; # max number of seconds after which the letter is forcibly released
 
-my $sFbfProjectRepo = "\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\projects\\packages";
+my $sFbfProjectRepo = "\\\\v800020\\mercurial_development\\oss\\FCL\\interim\\fbf\\projects\\packages";
 my $sFbfProjectDir = '';
 my $sSubProject = '';
 my $sSubprojVariant = '';
 my $sSBSConfig = '';
 #my $sSourcesFile = '';
 #my $sModelFile = '';
-my $sFbfConfigRepo="\\\\bishare\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\default";
+my $sFbfConfigRepo="\\\\v800020\\mercurial_development\\oss\\FCL\\interim\\fbf\\configs\\default";
 my $sFbfConfigDir = '';
 my $nCmdLineNumber;
 my $sDiamondsTag = '';
@@ -69,11 +69,11 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--subproj=RELPATH Select subproject located at RELPATH (relative to the root of the project repository)\n";
 	print "\t--variant=VARIANT If specified use sources_VARIANT.csv instead of sources.csv and add \"VARIANT\" as tag for this build\n";
 	print "\t--sbsconfig=CONFIG Pass on CONFIG as configuration to SBS (can also be a comma separated list, e.g. 'armv5,winscw')\n";
-	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project (instead of \\\\bishare\\mercurial_internal\\fbf\\projects\\packages)\n";
+	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project (instead of \\\\v800020\\mercurial_internal\\fbf\\projects\\packages)\n";
 	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo).\n";
 	#print "\t--sources=FILE ...\n";
 	#print "\t--model=FILE ...\n";
-	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\bishare\\mercurial_internal\\fbf\\config\\default)\n";
+	print "\t--configrepo=REPO[#REV] Use repository REPO at revision REV for the config (instead of \\\\v800020\\mercurial_internal\\fbf\\config\\default)\n";
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--tag=TAG Apply Diamonds tag TAG to this build\n";
