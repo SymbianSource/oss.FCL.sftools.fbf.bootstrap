@@ -99,6 +99,14 @@ if ($sSubProject and $sSubProject !~ m,^([^/]+)/[^/]+/([^/]+)$,)
 my $sWORKING_DRIVE = find_working_drive();
 print "Will use drive $sWORKING_DRIVE as working drive for this build\n";
 
+# check that $sLETTERS_FILE exists, otherwise create it
+if (!-f "$sWORKING_DRIVE\\$sLETTERS_FILE")
+{
+	open FILE, ">$sWORKING_DRIVE\\$sLETTERS_FILE";
+	print FILE "\n";
+	close FILE;
+}
+
 if ($bHudson)
 {
 	my $nProcessors = $ENV{'NUMBER_OF_PROCESSORS'};
@@ -213,14 +221,6 @@ elsif ($sFbfProjectRepo)
 }
 my $nJobNumber = sprintf("%.3d", $nUnformattedNumber);
 print "For build key $sJobNumberKey got assigned number \"$nJobNumber\"\n";
-
-# check that $sLETTERS_FILE exists, otherwise create it
-if (!-f "$sWORKING_DRIVE\\$sLETTERS_FILE")
-{
-	open FILE, ">$sWORKING_DRIVE\\$sLETTERS_FILE";
-	print FILE "\n";
-	close FILE;
-}
 
 # acquire drive letter
 my $sDriveLetter = acquire_drive_letter();
