@@ -170,7 +170,7 @@ elsif ($sFbfProjectDir)
 #}
 mkdir("$sWORKING_DRIVE\\$sJOB_BASE_DIR") if (!-d "$sWORKING_DRIVE\\$sJOB_BASE_DIR");
 my $sJobDir = mkdir_unique("$sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
-print "Created project dir $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobDir\n";
+print "Created project dir $sJobDir\n";
 
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
@@ -277,8 +277,8 @@ if ($bHudson)
 	print "cleaning job directories...\n";
 	if (-d "$sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel") # project dir
 	{
-		print "rmdir /S $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel\n";
-		system("rmdir /S /Q $sWORKING_DRIVE\\$sJOB_BASE_DIR\\$sJobLabel");
+		print "rmdir /S /Q $sJobDir\n";
+		system("rmdir /S /Q $sJobDir");
 	}
 	if (-d "$sWORKING_DRIVE\\fbf_job\\$sPackage\_$sPlatform.$nJobNumber") # build drive
 	{
