@@ -77,7 +77,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--configdir=DIR Use DIR location for the config (exclusive with --configrepo).\n";
 	print "\t--number=N Force build number to N\n";
 	print "\t--tag=TAG Apply Diamonds tag TAG to this build\n";
-	print "\t--hudson Checks that there is at least NUMBER_OF_PROCESSORS X 10 GB available on the working drive\n";
+	print "\t--hudson Clean up all job dirs after the build)\n";
 	print "\t--nopublish Use \\numbers_test.txt for numbers and disable publishing\n";
 	print "\t--define ATTRIBUTE=VALUE Pass -D statements to the Helium Framework\n";
 	print "\t--disableav Disable Anti-Virus for the duration of the build (also sync with other concurrent package builds)\n";
@@ -105,21 +105,6 @@ if (!-f "$sWORKING_DRIVE\\$sLETTERS_FILE")
 	open FILE, ">$sWORKING_DRIVE\\$sLETTERS_FILE";
 	print FILE "\n";
 	close FILE;
-}
-
-if ($bHudson)
-{
-	my $nProcessors = $ENV{'NUMBER_OF_PROCESSORS'};
-	my $diroutput = `dir /-C $sWORKING_DRIVE`;
-	my $nBytesFree = 0;
-	$nBytesFree = $1 if ($diroutput =~ /(\d+) bytes free/);
-	my $nNeededSpace = 10*$nProcessors*1073741824;
-	#print "Needed space is $nNeededSpace\n";
-	if ($nBytesFree < $nNeededSpace)
-	{
-		print "ERROR: Available disk space on working drive ($nBytesFree bytes) is not enough to run a package build with Hudson.\n";
-		exit(1);
-	}
 }
 
 my $sFbfProjectRev = '';
