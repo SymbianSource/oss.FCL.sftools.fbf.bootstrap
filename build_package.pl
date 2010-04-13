@@ -41,6 +41,7 @@ my $bHudson = 0;
 my $bPublish = 1;
 my %hHlmDefines = ();
 my $bDisableAntiVirus = 0;
+my $sUseBom = '';
 my $bHelp = 0;
 GetOptions((
 	'configrepo=s' => \$sFbfConfigRepo,
@@ -58,6 +59,7 @@ GetOptions((
 	'publish!' => \$bPublish,
 	'define=s' => \%hHlmDefines,
 	'disableav!' => \$bDisableAntiVirus,
+	'bom=s' => \$sUseBom,
 	'help!' => \$bHelp
 ));
 
@@ -81,6 +83,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "\t--nopublish Use \\numbers_test.txt for numbers and disable publishing\n";
 	print "\t--define ATTRIBUTE=VALUE Pass -D statements to the Helium Framework\n";
 	print "\t--disableav Disable Anti-Virus for the duration of the build (also sync with other concurrent package builds)\n";
+	print "\t--bom=LOCATION Use to build by taking the sources.csv from the build_BOM.zip at LOCATION\n";
 	exit(0);
 }
 
@@ -169,6 +172,15 @@ $sProjectArg = "-Dsf.project.dir=$sFbfProjectDir" if ($sFbfProjectDir);
 my $sBootstrapCmd = "hlm -f bootstrap.xml $sConfigArg $sProjectArg -Dsf.target.dir=$sJobDir";
 print("$sBootstrapCmd\n");
 system($sBootstrapCmd);
+
+# get sources.csv from supplied BOM location
+if ($sUseBom)
+{
+  print("get sources.csv from supplied BOM location\n");
+  my $sGetSourcesCmd = "7z e -y -i!build_info\\logs\\BOM\\sources.csv -o$sJobDir\\build\\config\\$sSubProject $sUseBom\\build_BOM.zip";
+  print("$sGetSourcesCmd\n");
+  system($sGetSourcesCmd);
+}
 
 # check that $sNUMBERS_FILE exists, otherwise create it
 if (!-f $sNUMBERS_FILE)
