@@ -51,7 +51,7 @@ GetOptions((
 	'projectdir=s' => \$sFbfProjectDir,
 	'subproj=s' => \$sSubProject,
 	'variant=s' => \$sSubprojVariant,
-	'sourcesrev' => \$sSourcesRevision,
+	'sourcesrev=s' => \$sSourcesRevision,
 	'sbsconfig=s' => \$sSBSConfig,
 	#'sources=s' => \$sSourcesFile,
 	#'model=s' => \$sModelFile,
