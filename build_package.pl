@@ -30,6 +30,7 @@ my $sFbfProjectRepo = "http://developer.symbian.org/oss/MCL/sftools/fbf/projects
 my $sFbfProjectDir = '';
 my $sSubProject = '';
 my $sSubprojVariant = '';
+my $sSourcesRevision = '';
 my $sSBSConfig = '';
 #my $sSourcesFile = '';
 #my $sModelFile = '';
@@ -50,6 +51,7 @@ GetOptions((
 	'projectdir=s' => \$sFbfProjectDir,
 	'subproj=s' => \$sSubProject,
 	'variant=s' => \$sSubprojVariant,
+	'sourcesrev' => \$sSourcesRevision,
 	'sbsconfig=s' => \$sSBSConfig,
 	#'sources=s' => \$sSourcesFile,
 	#'model=s' => \$sModelFile,
@@ -70,6 +72,7 @@ if ($bHelp or !($sSubProject or $sFbfProjectRepo or $sFbfProjectDir))
 	print "where OPTIONS are:\n";
 	print "\t--subproj=RELPATH Select subproject located at RELPATH (relative to the root of the project repository)\n";
 	print "\t--variant=VARIANT If specified use sources_VARIANT.csv instead of sources.csv and add \"VARIANT\" as tag for this build\n";
+	print "\t--sourcesrev=REV Sync source repos at revision REV (overrides the revision specified in sources.csv). Note this is the same for all source repos.\n";
 	print "\t--sbsconfig=CONFIG Pass on CONFIG as configuration to SBS (can also be a comma separated list, e.g. 'armv5,winscw')\n";
 	print "\t--projectrepo=REPO[#REV] Use repository REPO at revision REV for the project (instead of http://developer.symbian.org/oss/MCL/sftools/fbf/projects/packages)\n";
 	print "\t--projectdir=DIR Use DIR location for the project (exclusive with --projectrepo).\n";
@@ -241,6 +244,8 @@ my $sSubProjArg = '';
 $sSubProjArg = "-Dsf.subproject.path=$sSubProject" if ($sSubProject);
 my $sVariantArg = '';
 $sVariantArg = "-Dsf.spec.sourcesync.sourcespecfile=sources_$sSubprojVariant.csv" if ($sSubprojVariant);
+my $sSourcesRevisionArg = '';
+$sSourcesRevisionArg = "-Dsf.spec.sources.revision=\"$sSourcesRevision\"" if ($sSourcesRevision);
 my $sSBSConfigArg = '';
 $sSBSConfigArg = "-Dsf.spec.sbs.config=\"$sSBSConfig\"" if ($sSBSConfig);
 my $sAllTags = '';
@@ -252,12 +257,12 @@ $sTagsArg = "-Dsf.spec.publish.diamonds.tag=\"$sAllTags\"" if ($sAllTags);
 print("cd $sJobDir\\sf-config\n");
 chdir("$sJobDir\\sf-config");
 print "###### BUILD PREPARATION ######\n";
-my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sSBSConfigArg";
+my $sPreparationCmd = "hlm sf-prep -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sSourcesRevisionArg $sSBSConfigArg";
 print("$sPreparationCmd\n");
 system($sPreparationCmd);
 
 print "###### EXECUTE BUILD ######\n";
-my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sSBSConfigArg";
+my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sSourcesRevisionArg $sSBSConfigArg";
 print("$sBuildallCmd\n");
 system($sBuildallCmd);
 
