@@ -108,12 +108,38 @@
           </then>
           <else>
             <echo message="Cloning ${repo.url}#${repo.rev} to ${sf.target.dir}/${subdir.name}"/>
-            <exec executable="hg" dir="${sf.target.dir}">
-              <arg value="clone"/>
-              <arg value="-r${repo.rev}"/>
-              <arg value="${repo.url}"/>
-              <arg value="${subdir.name}"/>
-            </exec>
+		<trycatch>
+                <try>
+	            <exec executable="hg" dir="${sf.target.dir}">
+      	        <arg value="clone"/>
+            	  <arg value="-r${repo.rev}"/>
+              	  <arg value="${repo.url}"/>
+              	  <arg value="${subdir.name}"/>
+                  </exec>
+                </try>
+                <catch>
+                  <delete dir="${sf.target.dir}/${subdir.name}"/>
+			<trycatch>
+                	  <try>  
+	                <exec executable="hg" dir="${sf.target.dir}">
+      	            <arg value="clone"/>
+            	      <arg value="-r${repo.rev}"/>
+              	      <arg value="${repo.url}"/>
+              	      <arg value="${subdir.name}"/>
+                      </exec>
+                    </try>
+                    <catch>
+                      <delete dir="${sf.target.dir}/${subdir.name}"/>
+                      <exec executable="hg" dir="${sf.target.dir}">
+                         <arg value="clone"/>
+                         <arg value="-r${repo.rev}"/>
+                         <arg value="${repo.url}"/>
+                         <arg value="${subdir.name}"/>
+                      </exec>
+                    </catch>
+                  </trycatch>
+                </catch>
+            </trycatch>
           </else>
         </if>
       </else>
