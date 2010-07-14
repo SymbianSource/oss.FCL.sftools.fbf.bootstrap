@@ -5,6 +5,7 @@
   
   <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
   
+  <property name="build.drive" value="Setting this property stops helium reporting that it will use the Z: drive when it won't."/>
   <import file="${helium.dir}/helium.ant.xml" /> 
   
   <!-- target dir -->
