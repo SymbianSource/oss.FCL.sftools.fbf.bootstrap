@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SF-BOOTSTRAP" default="bootstrap" xmlns:hlm="http://www.nokia.com/helium">
-    
+  
   <property environment="env"/>
-    
+  
   <dirname property="sf.bootstrap.dir" file="${ant.file.SF-CONFIG}"/>
   
   <import file="${helium.dir}/helium.ant.xml" /> 
@@ -52,7 +52,7 @@
     <echo message="config: repo=${sf.config.repo} rev=${sf.config.rev}"/>
     <echo message="project: repo=${sf.project.repo} rev=${sf.project.rev}"/>
   </target>
-    
+  
   <target name="clean-env">
     <echo message="cleaning up the environment" />
     <delete dir="${sf.target.dir}/" />
@@ -108,37 +108,43 @@
           </then>
           <else>
             <echo message="Cloning ${repo.url}#${repo.rev} to ${sf.target.dir}/${subdir.name}"/>
-		<trycatch>
-                <try>
-	            <exec executable="hg" dir="${sf.target.dir}">
-      	        <arg value="clone"/>
-            	  <arg value="-r${repo.rev}"/>
-              	  <arg value="${repo.url}"/>
-              	  <arg value="${subdir.name}"/>
-                  </exec>
-                </try>
-                <catch>
-                  <delete dir="${sf.target.dir}/${subdir.name}"/>
-			<trycatch>
-                	  <try>  
-	                <exec executable="hg" dir="${sf.target.dir}">
-      	            <arg value="clone"/>
-            	      <arg value="-r${repo.rev}"/>
-              	      <arg value="${repo.url}"/>
-              	      <arg value="${subdir.name}"/>
-                      </exec>
-                    </try>
-                    <catch>
-                      <delete dir="${sf.target.dir}/${subdir.name}"/>
-                      <exec executable="hg" dir="${sf.target.dir}">
-                         <arg value="clone"/>
-                         <arg value="-r${repo.rev}"/>
-                         <arg value="${repo.url}"/>
-                         <arg value="${subdir.name}"/>
-                      </exec>
-                    </catch>
-                  </trycatch>
-                </catch>
+            <trycatch>
+              <try>
+                <exec failonerror="true" executable="hg" dir="${sf.target.dir}">
+                  <arg value="clone"/>
+                  <arg value="-r${repo.rev}"/>
+                  <arg value="${repo.url}"/>
+                  <arg value="${subdir.name}"/>
+                </exec>
+              </try>
+              <catch>
+                <echo message="Clone failed, retry in 10 seconds"/>
+                <sleep seconds="10"/>
+                <delete dir="${sf.target.dir}/${subdir.name}" quiet="true"/>
+                <echo message="Cloning ${repo.url}#${repo.rev} to ${sf.target.dir}/${subdir.name}"/>
+                <trycatch>
+                  <try>  
+                    <exec failonerror="true" executable="hg" dir="${sf.target.dir}">
+                      <arg value="clone"/>
+                      <arg value="-r${repo.rev}"/>
+                      <arg value="${repo.url}"/>
+                      <arg value="${subdir.name}"/>
+                    </exec>
+                  </try>
+                  <catch>
+                    <echo message="Clone failed, retry in 10 seconds"/>
+                    <sleep seconds="10"/>
+                    <delete dir="${sf.target.dir}/${subdir.name}" quiet="true"/>
+                    <echo message="Cloning ${repo.url}#${repo.rev} to ${sf.target.dir}/${subdir.name}"/>
+                    <exec failonerror="true" executable="hg" dir="${sf.target.dir}">
+                      <arg value="clone"/>
+                      <arg value="-r${repo.rev}"/>
+                      <arg value="${repo.url}"/>
+                      <arg value="${subdir.name}"/>
+                    </exec>
+                  </catch>
+                </trycatch>
+              </catch>
             </trycatch>
           </else>
         </if>
