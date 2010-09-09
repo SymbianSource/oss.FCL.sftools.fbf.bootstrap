@@ -266,6 +266,11 @@ my $sBuildallCmd = "hlm sf-build-all -Dsf.project.type=package $sSubProjArg -Dsf
 print("$sBuildallCmd\n");
 system($sBuildallCmd);
 
+print "###### FINALIZE BUILD ######\n";
+my $sFinalizeCmd = "hlm sf-finalize -Dsf.project.type=package $sSubProjArg -Dsf.spec.job.number=$nJobNumber -Dsf.spec.job.drive=$sDriveLetter: $sTagsArg $sNoPublishOpt $sJobRootDirArg $sHlmDefineOpt $sVariantArg $sSourcesRevisionArg $sSBSConfigArg";
+print("$sFinalizeCmd\n");
+system($sFinalizeCmd);
+
 print("cd $sBOOTSTRAP_DIR\n");
 chdir("$sBOOTSTRAP_DIR");
 
